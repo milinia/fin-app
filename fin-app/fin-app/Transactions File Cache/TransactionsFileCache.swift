@@ -7,12 +7,6 @@
 
 import Foundation
 
-enum FileCacheError: Error {
-    case invalidFilePath
-    case cannotReadFile
-    case cannotWriteFile
-}
-
 protocol TransactionsFileCacheProtocol {
     var transactions: [Int: Transaction] { get }
     func addTransaction(transaction: Transaction)

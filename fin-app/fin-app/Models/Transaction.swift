@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Transaction: Codable, Equatable {
+struct Transaction: Codable, Equatable, Identifiable {
     let id: Int
     let account: BankAccount
     let category: Category
@@ -128,6 +128,7 @@ extension Transaction {
 
 extension Transaction {
     
+    // можно было через joined на массив
     var csvObject: String {
         let bankAccountString = "\(account.id),\(account.name),\(account.balance),\(account.currency)"
         let categoryString = "\(category.id),\(category.name),\(category.emoji),\(category.isIncome == .income)"

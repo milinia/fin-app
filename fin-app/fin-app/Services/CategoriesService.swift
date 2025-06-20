@@ -14,6 +14,7 @@ protocol CategoriesServiceProtocol {
 
 final class CategoriesService: CategoriesServiceProtocol {
     
+    //можно было бы вынести в отдельную переменную и потом делать filter по типу в fetchCategories(by: Direction)
     func fetchAllCategories() async throws -> [Category] {
         [
             Category(id: 1, name: "Зарплата", emoji: "💰", isIncome: .income),
