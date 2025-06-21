@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct HistoryView: View {
     
@@ -13,9 +14,12 @@ struct HistoryView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var sortBy: SortOperations = .byDate
-    @State private var showDatePicker = false
+    @State private var showStartDatePicker = false
+    @State private var showEndDatePicker = false
     @State private var selectedDate = Date()
     @State private var dateChanged: EditingDateField = .start
+    @State private var startFieldPosition: CGRect = .zero
+    @State private var endFieldPosition: CGRect = .zero
     
     private var direction: Direction
     
@@ -34,9 +38,15 @@ struct HistoryView: View {
                     .padding(.horizontal, 11)
                     .background(RoundedRectangle(cornerRadius: 6)
                             .fill(Color.lightGreen))
+                    .background(GeometryReader { geo in
+                        Color.clear
+                            .onAppear {
+                                startFieldPosition = geo.frame(in: .global)
+                            }
+                    })
                     .onTapGesture {
                         selectedDate = model.startOfThePeriod
-                        showDatePicker = true
+                        showStartDatePicker = true
                         dateChanged = .start
                     }
             }
@@ -51,9 +61,15 @@ struct HistoryView: View {
                         RoundedRectangle(cornerRadius: 6)
                         .fill(Color.lightGreen)
                     )
+                    .background(GeometryReader { geo in
+                        Color.clear
+                            .onAppear {
+                                endFieldPosition = geo.frame(in: .global)
+                            }
+                    })
                     .onTapGesture {
                         selectedDate = model.endOfThePeriod
-                        showDatePicker = true
+                        showEndDatePicker = true
                         dateChanged = .end
                     }
             }
@@ -94,60 +110,89 @@ struct HistoryView: View {
         }
     }
     
+    private var datePicker: some View {
+        VStack {
+            DatePicker("",
+                       selection: $selectedDate,
+                       displayedComponents: [.date])
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+                .padding()
+                    
+            Button(Strings.HistoryView.done) {
+                showEndDatePicker = false
+                showStartDatePicker = false
+                
+                switch dateChanged {
+                case .start:
+                    model.setStartOfThePeriod(selectedDate)
+                case .end:
+                    model.setEndOfThePeriod(selectedDate)
+                }
+            }
+            .padding()
+        }
+        .background(Color.white)
+        .cornerRadius(3)
+        .shadow(radius: 1)
+        .padding(.horizontal, 30)
+    }
+    
     var body: some View {
         NavigationStack {
-            List {
-                commonInfoView
-                operationsSection
-            }
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        HStack {
-                            AppIcons.HistoryViewIcons.backPurple.image
-                            Text(Strings.HistoryView.back)
+            ZStack {
+                List {
+                    commonInfoView
+                    operationsSection
+                }
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack {
+                                AppIcons.HistoryViewIcons.backPurple.image
+                                Text(Strings.HistoryView.back)
+                            }
+                            .tint(Color.purpleAccent)
                         }
-                        .tint(Color.purpleAccent)
                     }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                           
+                        }) {
+                            AppIcons.HistoryViewIcons.file.image
+                        }
+                    }
+                }
+                .navigationTitle(Strings.HistoryView.title)
+                
+                if showStartDatePicker || showEndDatePicker {
+                    Color.black.opacity(0.001)
+                        .ignoresSafeArea()
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation {
+                                showStartDatePicker = false
+                                showEndDatePicker = false
+                            }
+                        }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                       
-                    }) {
-                        AppIcons.HistoryViewIcons.file.image
-                    }
+                if showStartDatePicker {
+                    datePicker
+                        .position(x: UIScreen.main.bounds.midX, y: startFieldPosition.maxY + 2 * startFieldPosition.height - 8)
+                }
+                if showEndDatePicker {
+                    datePicker
+                        .position(x: UIScreen.main.bounds.midX, y: endFieldPosition.maxY + 2 * endFieldPosition.height - 8)
                 }
             }
-            .navigationTitle(Strings.HistoryView.title)
         }
         .onAppear {
             model.fetchTransactions(direction: direction)
-        }
-        .sheet(isPresented: $showDatePicker) {
-            VStack {
-                DatePicker("",
-                           selection: $selectedDate,
-                           displayedComponents: [.date])
-                    .datePickerStyle(.graphical)
-                    .labelsHidden()
-                    .padding()
-                        
-                Button(Strings.HistoryView.done) {
-                    showDatePicker = false
-                    
-                    switch dateChanged {
-                    case .start:
-                        model.setStartOfThePeriod(selectedDate)
-                    case .end:
-                        model.setEndOfThePeriod(selectedDate)
-                    }
-                }
-                .padding()
-            }
         }
     }
 }
