@@ -12,19 +12,17 @@ final class HistoryModel: ObservableObject {
     
     @Published var transactions: [Transaction] = []
     @Published var totalAmount: Decimal = 0
-    @Published var startOfThePeriod: Date = .now
-    @Published var endOfThePeriod: Date = .now
+    @Published var startOfThePeriod: Date
+    @Published var endOfThePeriod: Date
     
-    private let transactionsService: TransactionsServiceProtocol = TransactionsService()
+    private let transactionsService: TransactionsServiceProtocol
     private var direction: Direction = .income
     
-    init() {
-        let dayMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .now
-        startOfThePeriod = Calendar.current.startOfDay(for: dayMonthAgo)
+    init(transactionsService: TransactionsServiceProtocol) {
+        self.transactionsService = transactionsService
         
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now
-        let tomorrowStartOfDay = Calendar.current.startOfDay(for: tomorrow)
-        endOfThePeriod = Calendar.current.date(byAdding: .minute, value: -1, to: tomorrowStartOfDay) ?? .now
+        startOfThePeriod = Date.dayMonthAgo
+        endOfThePeriod = Date.startOfTomorrow
     }
     
     func fetchTransactions(direction: Direction) {
@@ -75,7 +73,7 @@ final class HistoryModel: ObservableObject {
         fetchTransactions(direction: direction)
     }
     
-    func sortOperation(by value: SortOperations) {
+    func sortOperation(by value: SortBy) {
         if value == .byDate {
             transactions.sort(by: { $0.transactionDate > $1.transactionDate })
         } else {

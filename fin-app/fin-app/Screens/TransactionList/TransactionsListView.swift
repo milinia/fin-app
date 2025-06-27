@@ -81,7 +81,7 @@ struct TransactionsListView: View {
                 addTransactionButton
             }
             .navigationDestination(isPresented: $isShowingHistory) {
-                HistoryView(model: HistoryModel(), direction: direction)
+                HistoryView(model: HistoryModel(transactionsService: TransactionsService()), direction: direction)
             }
             .navigationTitle(direction == .income ? Strings.TransactionsListView.incomeTitle : Strings.TransactionsListView.outcomeTitle)
             .toolbar {
@@ -101,5 +101,5 @@ struct TransactionsListView: View {
 }
 
 #Preview {
-    TransactionsListView(direction: .income, model: TransactionsListModel())
+    TransactionsListView(direction: .income, model: TransactionsListModel(transactionsService: TransactionsService()))
 }

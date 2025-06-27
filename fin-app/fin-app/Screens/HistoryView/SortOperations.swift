@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SortOperations {
+enum SortBy {
     case byDate
     case byAmount
     

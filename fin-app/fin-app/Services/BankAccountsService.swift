@@ -9,7 +9,7 @@ import Foundation
 
 protocol BankAccountsServiceProtocol {
     func fetchBankAccount() async throws -> BankAccount
-    func updateBankAccount(name: String, balance: Decimal, currency: String) async throws -> BankAccount
+    func updateBankAccount(balance: Decimal, currency: String) async throws -> BankAccount
 }
 
 final class BankAccountsService: BankAccountsServiceProtocol {
@@ -21,9 +21,8 @@ final class BankAccountsService: BankAccountsServiceProtocol {
                     currency: "RUB")
     }
     
-    func updateBankAccount(name: String, balance: Decimal, currency: String) async throws -> BankAccount {
-        BankAccount(id: 1,
-                    name: name,
+    func updateBankAccount(balance: Decimal, currency: String) async throws -> BankAccount {
+        BankAccount(id: 1, name: "Основной счет",
                     balance: balance,
                     currency: currency)
     }

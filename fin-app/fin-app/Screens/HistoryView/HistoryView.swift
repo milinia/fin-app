@@ -13,7 +13,7 @@ struct HistoryView: View {
     @ObservedObject var model: HistoryModel
     @Environment(\.dismiss) private var dismiss
     
-    @State private var sortBy: SortOperations = .byDate
+    @State private var sortBy: SortBy = .byDate
     @State private var showStartDatePicker = false
     @State private var showEndDatePicker = false
     @State private var selectedDate = Date()
@@ -77,11 +77,13 @@ struct HistoryView: View {
             HStack {
                 Text(Strings.HistoryView.sort)
                 Spacer()
-                Text(sortBy.title)
-                    .onTapGesture {
-                        sortBy = sortBy == .byAmount ? .byDate : .byAmount
-                        model.sortOperation(by: sortBy)
-                    }
+                Picker("", selection: $sortBy) {
+                    Text(SortBy.byAmount.title).tag(SortBy.byAmount)
+                    Text(SortBy.byDate.title).tag(SortBy.byDate)
+                }
+            }
+            .onChange(of: sortBy) {
+                model.sortOperation(by: sortBy)
             }
             
             HStack {
@@ -198,5 +200,5 @@ struct HistoryView: View {
 }
 
 #Preview {
-    HistoryView(model: HistoryModel(), direction: .outcome)
+    HistoryView(model: HistoryModel(transactionsService: TransactionsService()), direction: .outcome)
 }

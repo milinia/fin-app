@@ -12,13 +12,17 @@ final class TransactionsListModel: ObservableObject {
     @Published var transactions: [Transaction] = []
     @Published var totalAmount: Decimal = 0
     
-    private let transactionsService: TransactionsServiceProtocol = TransactionsService()
+    private let transactionsService: TransactionsServiceProtocol
+    
+    init(transactionsService: TransactionsServiceProtocol) {
+        self.transactionsService = transactionsService
+    }
     
     func fetchTransactions(direction: Direction) {
         Task {
             do {
                 let startOfTheDay = Calendar.current.startOfDay(for: Date())
-                let endOfTheDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfTheDay)
+                let endOfTheDay = Date.startOfTomorrow
                 let transactions = try await transactionsService.fetchTransactions(from: startOfTheDay, to: endOfTheDay)
                 let neededTransactions = transactions.filter { $0.category.isIncome == direction }
                 let totalAmount = neededTransactions.reduce(0) { $0 + $1.amount }
