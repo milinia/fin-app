@@ -7,10 +7,10 @@
 
 import Foundation
 
-enum CurrencySign: String {
+enum CurrencySign: String, CaseIterable {
+    case rub = "RUB"
     case usd = "USD"
     case eur = "EUR"
-    case rub = "RUB"
     
     var symbol: String {
         switch self {
@@ -20,6 +20,17 @@ enum CurrencySign: String {
             return "€"
         case .rub:
             return "₽"
+        }
+    }
+    
+    var text: String {
+        switch self {
+        case .usd:
+            return "Американский доллар"
+        case .eur:
+            return "Евро"
+        case .rub:
+            return "Российский рубль"
         }
     }
 }

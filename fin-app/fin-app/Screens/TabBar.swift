@@ -12,13 +12,13 @@ struct TabBar: View {
         ZStack(alignment: .bottom) {
             TabView {
                 Tab(Strings.TabBar.outcome, image: AppIcons.TabBarIcons.outcome.rawValue) {
-                    TransactionsListView(direction: .outcome, model: TransactionsListModel())
+                    TransactionsListView(direction: .outcome, model: TransactionsListModel(transactionsService: TransactionsService()))
                 }
                 Tab(Strings.TabBar.income, image: AppIcons.TabBarIcons.income.rawValue) {
-                    TransactionsListView(direction: .income, model: TransactionsListModel())
+                    TransactionsListView(direction: .income, model: TransactionsListModel(transactionsService: TransactionsService()))
                 }
                 Tab(Strings.TabBar.balance, image: AppIcons.TabBarIcons.balance.rawValue) {
-                    EmptyView()
+                    MyBalanceView(model: MyBalanceModel(bankAccountService: BankAccountsService()))
                 }
                 Tab(Strings.TabBar.category, image: AppIcons.TabBarIcons.category.rawValue) {
                     EmptyView()

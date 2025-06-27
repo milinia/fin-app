@@ -35,4 +35,13 @@ enum Strings {
         static let byDate = "По дате"
         static let byAmount = "По сумме"
     }
+    
+    enum MyBalanceView {
+        static let title = "Мой счет"
+        static let balance = "Баланс"
+        static let currency = "Валюта"
+        static let edit = "Редактировать"
+        static let save = "Сохранить"
+        static let moneyEmoji = "💰"
+    }
 }
