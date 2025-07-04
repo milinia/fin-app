@@ -43,5 +43,5 @@ struct MyCategoriesView: View {
 }
 
 #Preview {
-    MyCategoriesView(model: MyCategoriesViewModel(categoriesService: CategoriesService()))
+    MyCategoriesView(model: MyCategoriesViewModel(categoriesService: CategoriesService(), fuzzySearchHelper: FuzzySearchHelper()))
 }

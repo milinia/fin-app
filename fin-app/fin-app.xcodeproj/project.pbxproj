@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		E557C6152E17DDA2000E6BDC /* Fuse in Frameworks */ = {isa = PBXBuildFile; productRef = E557C6142E17DDA2000E6BDC /* Fuse */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		E546589D2DF431FE0001F09E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -56,7 +52,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E557C6152E17DDA2000E6BDC /* Fuse in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,7 +112,6 @@
 			);
 			name = "fin-app";
 			packageProductDependencies = (
-				E557C6142E17DDA2000E6BDC /* Fuse */,
 			);
 			productName = "fin-app";
 			productReference = E546588A2DF431FD0001F09E /* fin-app.app */;
@@ -202,7 +196,6 @@
 			mainGroup = E54658812DF431FD0001F09E;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E557C6132E17DDA2000E6BDC /* XCRemoteSwiftPackageReference "fuse-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E546588B2DF431FD0001F09E /* Products */;
@@ -567,25 +560,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		E557C6132E17DDA2000E6BDC /* XCRemoteSwiftPackageReference "fuse-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/krisk/fuse-swift";
-			requirement = {
-				kind = exactVersion;
-				version = 1.4.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		E557C6142E17DDA2000E6BDC /* Fuse */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E557C6132E17DDA2000E6BDC /* XCRemoteSwiftPackageReference "fuse-swift" */;
-			productName = Fuse;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E54658822DF431FD0001F09E /* Project object */;
 }

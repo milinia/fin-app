@@ -7,17 +7,17 @@
 
 import Foundation
 import SwiftUI
-import Fuse
 
 final class MyCategoriesViewModel: ObservableObject {
     
     @Published var categoriesToView: [Category] = []
     private var categories: [Category] = []
     private let categoriesService: CategoriesService
-    private let fuse = Fuse()
+    private let fuzzySearchHelper: FuzzySearchHelperProtocol
     
-    init(categoriesService: CategoriesService) {
+    init(categoriesService: CategoriesService, fuzzySearchHelper: FuzzySearchHelperProtocol) {
         self.categoriesService = categoriesService
+        self.fuzzySearchHelper = fuzzySearchHelper
     }
     
     func fetchCategories() async {
@@ -36,22 +36,10 @@ final class MyCategoriesViewModel: ObservableObject {
             return
         }
     
-        let pattern = fuse.createPattern(from: searchText)
-        guard let pattern = pattern else {
-            return
-        }
-        
         Task {
-            let filteredCategories = categories.filter {
-                fuzzySearch(pattern: pattern, in: $0.name)
-            }
+            let filteredCategories = fuzzySearchHelper.fuzzySearch(for: categories, with: searchText)
             await updateCategoriesToView(filteredCategories)
         }
-    }
-    
-    private func fuzzySearch(pattern: Fuse.Pattern, in string: String) -> Bool {
-        let searchResult = fuse.search(pattern, in: string)?.ranges
-        return (searchResult?.count ?? 0) > 0
     }
     
     @MainActor
