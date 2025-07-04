@@ -44,4 +44,9 @@ enum Strings {
         static let save = "Сохранить"
         static let moneyEmoji = "💰"
     }
+    
+    enum MyCategoriesView {
+        static let title = "Мои статьи"
+        static let category = "Cтатьи"
+    }
 }
