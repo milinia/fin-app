@@ -24,13 +24,14 @@ struct MyBalanceView: View {
            Spacer()
            HStack(spacing: 4) {
                TextField("", text: $model.balanceString)
-                   .keyboardType(.numberPad)
+                   .keyboardType(.decimalPad)
                    .foregroundColor(isBalanceHidden ? state.balanceTextBackgroundColor : .primary)
                    .multilineTextAlignment(.trailing)
                    .frame(minWidth: 50, maxWidth: 100, alignment: .trailing)
                    .focused($isBalanceEntering)
+                   .allowsHitTesting(state.isTextFieldEditable)
                    .onChange(of: model.balanceString, {
-                       let digits = model.balanceString.filter("0123456789".contains)
+                       let digits = model.balanceString.filter("-0123456789".contains)
                        model.updateBalance(digits)
                    })
                Text(model.selectedCurrency.symbol)
@@ -51,12 +52,15 @@ struct MyBalanceView: View {
            Text(Strings.MyBalanceView.currency)
            Spacer()
            Text(model.selectedCurrency.symbol)
+               .foregroundStyle(state.balanceInfoTextColor)
            if state == .edit {
                Image(systemName: "chevron.right")
                    .resizable()
                    .frame(width: 7, height: 11)
+                   .foregroundStyle(state.balanceInfoTextColor)
            }
         }
+       .contentShape(Rectangle())
        .onTapGesture {
            guard state == .edit else { return }
            showingCurrencyPopover.toggle()
@@ -86,6 +90,7 @@ struct MyBalanceView: View {
                         Spacer()
                     }
                 }
+                .scrollDismissesKeyboard(.interactively)
                 .refreshable {
                     model.fetchBankAccount()
                 }
@@ -117,6 +122,8 @@ struct MyBalanceView: View {
                         if state == .view {
                             isBalanceEntering = false
                             model.updateBankAccount()
+                        } else {
+                            isBalanceHidden = false
                         }
                     }) {
                         Text(state.leadingNavigationButtonTitle)

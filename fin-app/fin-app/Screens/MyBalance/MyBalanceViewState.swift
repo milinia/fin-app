@@ -38,4 +38,22 @@ enum MyBalanceViewState {
             return Color(UIColor.systemBackground)
         }
     }
+    
+     var isTextFieldEditable: Bool {
+        switch self {
+        case .view:
+            return false
+        case .edit:
+            return true
+        }
+    }
+    
+    var balanceInfoTextColor: Color {
+        switch self {
+        case .view:
+            return .black
+        case .edit:
+            return .lightGray
+        }
+    }
 }
