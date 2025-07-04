@@ -21,7 +21,7 @@ struct TabBar: View {
                     MyBalanceView(model: MyBalanceModel(bankAccountService: BankAccountsService()))
                 }
                 Tab(Strings.TabBar.category, image: AppIcons.TabBarIcons.category.rawValue) {
-                    MyCategoriesView(model: MyCategoriesViewModel(categoriesService: CategoriesService()))
+                    MyCategoriesView(model: MyCategoriesViewModel(categoriesService: CategoriesService(), fuzzySearchHelper: FuzzySearchHelper()))
                 }
                 Tab(Strings.TabBar.settings, image: AppIcons.TabBarIcons.settings.rawValue) {
                     EmptyView()
