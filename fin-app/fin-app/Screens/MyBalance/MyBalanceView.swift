@@ -31,7 +31,7 @@ struct MyBalanceView: View {
                    .focused($isBalanceEntering)
                    .allowsHitTesting(state.isTextFieldEditable)
                    .onChange(of: model.balanceString, {
-                       let digits = model.balanceString.filter("-0123456789".contains)
+                       let digits = model.balanceString.filter("-0123456789,.".contains)
                        model.updateBalance(digits)
                    })
                Text(model.selectedCurrency.symbol)

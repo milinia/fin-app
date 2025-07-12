@@ -9,18 +9,19 @@ import Foundation
 
 protocol TransactionsServiceProtocol {
     func fetchTransactions(from: Date?, to: Date?) async throws -> [Transaction]
-    func createTransaction(accountId: Int, categoryId: Int, amount: Decimal, comment: String) async throws -> Transaction
-    func updateTransaction(transactionId: Int, accountId: Int, categoryId: Int, amount: Decimal, comment: String) async throws -> Transaction
+    func createTransaction(account: BankAccount, category: Category, amount: Decimal, comment: String) async throws -> Transaction
+    func updateTransaction(transaction: Transaction, newCategory: Category, newAmount: Decimal, comment: String) async throws -> Transaction
     func deleteTransaction(transactionId: Int) async throws -> Bool
 }
 
 final class TransactionsService: TransactionsServiceProtocol {
     
-    let transactions = [Transaction(id: 1,
+    var transactions = [Transaction(id: 1,
                                    account: BankAccount(id: 1, name: "Основной счет", balance: 100000.0, currency: "RUB"),
                                    category: Category(id: 1, name: "Зарплата", emoji: "💰", isIncome: .income),
                                    amount: 80000.0,
                                    transactionDate: Date(),
+                                    comment: "Зарплата за июнь",
                                    createdAt: Date(),
                                    updatedAt: Date()),
 
@@ -29,6 +30,7 @@ final class TransactionsService: TransactionsServiceProtocol {
                                    category: Category(id: 2, name: "Кофе", emoji: "☕️", isIncome: .outcome),
                                    amount: 300.0,
                                    transactionDate: Date(),
+                                   comment: "Кофе в Skuratov",
                                    createdAt: Date(),
                                    updatedAt: Date()),
 
@@ -45,6 +47,7 @@ final class TransactionsService: TransactionsServiceProtocol {
                                    category: Category(id: 4, name: "Квартплата", emoji: "🏠", isIncome: .outcome),
                                    amount: 10000.0,
                                    transactionDate: Date(),
+                                   comment: "Оплата ЖКХ за июль",
                                    createdAt: Date(),
                                    updatedAt: Date()),
 
@@ -94,47 +97,50 @@ final class TransactionsService: TransactionsServiceProtocol {
                                    amount: 2500.0,
                                    transactionDate: Calendar.current.date(byAdding: .day, value: -8, to: Date())!,
                                    createdAt: Date(),
-                                   updatedAt: Date())]
+                                   updatedAt: Date()),
+                        Transaction(id: 11,
+                                    account: BankAccount(id: 1, name: "Основной счет", balance: 91000.0, currency: "RUB"),
+                                    category: Category(id: 10, name: "Одежда", emoji: "👕", isIncome: .outcome),
+                                    amount: 2500.0,
+                                    transactionDate: Calendar.current.date(byAdding: .day, value: -8, to: Date())!,
+                                    createdAt: Date(),
+                                    updatedAt: Date())
+    ]
     
     func fetchTransactions(from: Date? = nil, to: Date? = nil) async throws -> [Transaction] {
         transactions.filter { from ?? .now <= $0.transactionDate && $0.transactionDate <= to ?? .now }
     }
     
-    func createTransaction(accountId: Int, categoryId: Int, amount: Decimal, comment: String) async throws -> Transaction {
-        Transaction(id: 2,
-                    account: BankAccount(id: accountId,
-                                         name: "Основной счет",
-                                         balance: 10000.0,
-                                         currency: "RUB"),
-                    category: Category(id: categoryId,
-                                       name: "Еда",
-                                       emoji: "🍔",
-                                       isIncome: .outcome),
-                    amount: amount,
-                    transactionDate: .now,
-                    comment: comment,
-                    createdAt: .now,
-                    updatedAt: .now)
+    func createTransaction(account: BankAccount, category: Category, amount: Decimal, comment: String) async throws -> Transaction {
+        let newTransaction = Transaction(id: transactions.count + 1,
+                                         account: account,
+                                         category: category,
+                                         amount: amount,
+                                         transactionDate: .now,
+                                         comment: comment,
+                                         createdAt: .now,
+                                         updatedAt: .now)
+        transactions.append(newTransaction)
+        return newTransaction
     }
     
-    func updateTransaction(transactionId: Int, accountId: Int, categoryId: Int, amount: Decimal, comment: String) async throws -> Transaction {
-        Transaction(id: transactionId,
-                    account: BankAccount(id: accountId,
-                                         name: "Основной счет",
-                                         balance: 10000.0,
-                                         currency: "RUB"),
-                    category: Category(id: categoryId,
-                                       name: "Еда",
-                                       emoji: "🍔",
-                                       isIncome: .outcome),
-                    amount: amount,
-                    transactionDate: .now,
-                    comment: comment,
-                    createdAt: .now,
-                    updatedAt: .now)
+    func updateTransaction(transaction: Transaction, newCategory: Category, newAmount: Decimal, comment: String) async throws -> Transaction {
+        let updatedTransaction = Transaction(id: transaction.id,
+                                             account: transaction.account,
+                                             category: newCategory,
+                                             amount: newAmount,
+                                             transactionDate: transaction.transactionDate,
+                                             comment: comment,
+                                             createdAt: transaction.createdAt,
+                                             updatedAt: .now)
+        if let index = transactions.firstIndex(of: transaction) {
+            transactions[index] = updatedTransaction
+        }
+        return updatedTransaction
     }
     
     func deleteTransaction(transactionId: Int) async throws -> Bool {
-        true
+        transactions.removeAll { $0.id == transactionId }
+        return true
     }
 }
