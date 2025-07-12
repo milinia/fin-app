@@ -15,7 +15,7 @@ final class HistoryModel: ObservableObject {
     @Published var startOfThePeriod: Date
     @Published var endOfThePeriod: Date
     
-    private let transactionsService: TransactionsServiceProtocol
+    let transactionsService: TransactionsServiceProtocol
     private var direction: Direction = .income
     
     init(transactionsService: TransactionsServiceProtocol) {

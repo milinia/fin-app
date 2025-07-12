@@ -162,9 +162,9 @@ struct HistoryView: View {
                     }
                     
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                           
-                        }) {
+                        NavigationLink {
+                            AnalysisView(model: AnalysisViewModel(transactionService: model.transactionsService), direction: direction)
+                        } label: {
                             AppIcons.HistoryViewIcons.file.image
                         }
                     }

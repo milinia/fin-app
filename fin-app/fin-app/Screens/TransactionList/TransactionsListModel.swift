@@ -12,7 +12,7 @@ final class TransactionsListModel: ObservableObject {
     @Published var transactions: [Transaction] = []
     @Published var totalAmount: Decimal = 0
     
-    private let transactionsService: TransactionsServiceProtocol
+    let transactionsService: TransactionsServiceProtocol
     
     init(transactionsService: TransactionsServiceProtocol) {
         self.transactionsService = transactionsService

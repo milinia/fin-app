@@ -7,17 +7,42 @@
 
 import SwiftUI
 
+enum ActiveModal: Equatable {
+    case create(BankAccount)
+    case edit(Transaction)
+}
+
+extension ActiveModal: Identifiable {
+    var id: String {
+        switch self {
+        case .create:
+            return "create"
+        case .edit(let transaction):
+            return "edit-\(transaction.id)"
+        }
+    }
+}
+
 struct TransactionsListView: View {
 
     @ObservedObject var model: TransactionsListModel
     
+    @StateObject private var manageTransactionViewModel: ManageTransactionViewModel
     @State private var isShowingHistory = false
+    @State private var activeModal: ActiveModal?
     
     private let direction: Direction
     
     init(direction: Direction, model: TransactionsListModel) {
         self.direction = direction
         self.model = model
+        
+        self._manageTransactionViewModel = StateObject(
+                    wrappedValue: ManageTransactionViewModel(
+                        categoriesService: CategoriesService(),
+                        transactionsService: model.transactionsService
+                    )
+                )
     }
     
     private var totalSection: some View {
@@ -42,6 +67,10 @@ struct TransactionsListView: View {
                     }
                     OperationItemView(operation: transaction)
                 }
+                .onTapGesture {
+                    activeModal = .edit(transaction)
+                    
+                }
                 .alignmentGuide(.listRowSeparatorLeading) { viewDimensions in
                     direction == .income ? viewDimensions[.listRowSeparatorLeading] :
                         viewDimensions[.listRowSeparatorLeading] + 28
@@ -56,7 +85,9 @@ struct TransactionsListView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    // добавить транзакцию
+                    if let bankAccount = model.transactions.first?.account {
+                        activeModal = .create(bankAccount)
+                    }
                 }) {
                     Image(systemName: "plus")
                         .foregroundColor(.white)
@@ -80,6 +111,9 @@ struct TransactionsListView: View {
                 }
                 addTransactionButton
             }
+            .onChange(of: activeModal, {
+                model.fetchTransactions(direction: direction)
+            })
             .navigationDestination(isPresented: $isShowingHistory) {
                 HistoryView(model: HistoryModel(transactionsService: TransactionsService()), direction: direction)
             }
@@ -96,6 +130,20 @@ struct TransactionsListView: View {
         }
         .onAppear {
             model.fetchTransactions(direction: direction)
+        }
+        .fullScreenCover(item: $activeModal) { modal in
+            switch modal {
+            case .create(let bankAccount):
+                ManageTransactionView(
+                    state: .create(direction, bankAccount),
+                    model: manageTransactionViewModel
+                )
+            case .edit(let transaction):
+                ManageTransactionView(
+                    state: .edit(direction, transaction),
+                    model: manageTransactionViewModel
+                )
+            }
         }
     }
 }

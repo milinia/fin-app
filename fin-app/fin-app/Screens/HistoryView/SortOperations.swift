@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SortBy {
+enum SortBy: CaseIterable {
     case byDate
     case byAmount
     

@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct Category: Codable, Equatable, Identifiable {
+struct Category: Codable, Equatable, Identifiable, Hashable {
     let id: Int
     let name: String
     let emoji: Character
     let isIncome: Direction
     
-    private enum CodingKeys: String, CodingKey {
+    private enum CodingKeys: String, CodingKey, Hashable {
         case id
         case name
         case emoji

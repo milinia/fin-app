@@ -49,4 +49,29 @@ enum Strings {
         static let title = "Мои статьи"
         static let category = "Cтатьи"
     }
+    
+    enum AnalysisView {
+        static let title = "Анализ"
+        static let periodBegin = "Период: начало"
+        static let periodEnd = "Период: конец"
+        static let sum = "Сумма"
+        static let operations = "Операции"
+    }
+    
+    enum ManageTransactionView {
+        static let titleIncome = "Мои Доходы"
+        static let titleOutcome = "Мои Расходы"
+        static let save = "Сохранить"
+        static let create = "Создать"
+        static let cancel = "Отмена"
+        static let categories = "Статья"
+        static let sum = "Сумма"
+        static let date = "Дата"
+        static let time = "Время"
+        static let deleteIncome = "Удалить доход"
+        static let deleteOutcome = "Удалить расход"
+        static let error = "Ошибка"
+        static let ok = "Oк"
+        static let emptyFields = "Заполните, пожалуйста, все поля"
+    }
 }
