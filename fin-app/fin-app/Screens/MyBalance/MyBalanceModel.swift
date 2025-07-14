@@ -44,7 +44,7 @@ final class MyBalanceModel: ObservableObject {
     }
     
     func updateBankAccount() {
-        Task{
+        Task {
             do {
                 let newAccount = try await bankAccountService.updateBankAccount(balance: balance,
                                                                                 currency: selectedCurrency.rawValue)
