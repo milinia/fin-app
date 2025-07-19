@@ -23,14 +23,24 @@ final class CategoriesService: CategoriesServiceProtocol {
     }
     
     func fetchAllCategories() async throws -> [Category] {
-        let categories: [Category] = try await networkClient.request(endpoint: CategoriesEndpoints.getCategories)
-        try await categoriesCache.saveCategories(categories)
-        return categories
+        do {
+            let categories: [Category] = try await networkClient.request(endpoint: CategoriesEndpoints.getCategories)
+            try await categoriesCache.saveCategories(categories)
+            return categories
+        } catch {
+            return try await categoriesCache.getAllCategories()
+        }
     }
     
     func fetchCategories(by direction: Direction) async throws -> [Category] {
-        let categories: [Category] = try await networkClient.request(endpoint: CategoriesEndpoints.getCategoriesBy(direction: direction))
-        try await categoriesCache.saveCategories(categories)
-        return categories
+        do {
+            let categories: [Category] = try await networkClient.request(endpoint: CategoriesEndpoints.getCategoriesBy(direction: direction))
+            try await categoriesCache.saveCategories(categories)
+            return categories
+        } catch {
+            var categories = try await categoriesCache.getAllCategories()
+            categories = categories.filter { $0.isIncome == direction }
+            return categories
+        }
     }
 }

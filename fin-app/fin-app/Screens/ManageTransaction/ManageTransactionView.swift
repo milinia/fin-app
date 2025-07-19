@@ -100,67 +100,69 @@ struct ManageTransactionView: View {
     }
     
     private func contentView(categories: [Category]) -> some View {
-        Form {
-            commonInfoView(categories: categories)
-            
-            if state.isDeleteButtonEnabled {
-                Button(role: .destructive) {
-                    if let transaction = state.transaction {
-                        model.deleteTransaction(transaction: transaction)
-                        dismiss()
-                    }
-                } label: {
-                    Text(state.deleteButtonTitle)
-                }
-                .contentShape(Rectangle())
-            }
-        }
-        .alert(Strings.ManageTransactionView.error, isPresented: $showAlert) {
-            Button(Strings.ManageTransactionView.ok, role: .cancel) { }
-        } message: {
-            Text(Strings.ManageTransactionView.emptyFields)
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Text(Strings.ManageTransactionView.cancel)
-                        .tint(Color.purpleAccent)
-                }
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    if !isSavingAllowed() {
-                        showAlert = true
-                    } else {
-                        switch state {
-                        case .create:
-                            model.addTransaction(
-                                category: selectedCategory,
-                                amount: Decimal(string: amount) ?? 0,
-                                transactionDate: selectedDateTime,
-                                comment: transactionComment)
-                            
-                        case .edit(_, let transaction):
-                            model.editTransaction(
-                                transaction: transaction,
-                                newCategory: selectedCategory,
-                                newAmount: Decimal(string: amount) ?? 0,
-                                transactionDate: selectedDateTime,
-                                comment: transactionComment)
+        NavigationStack {
+            Form {
+                commonInfoView(categories: categories)
+                
+                if state.isDeleteButtonEnabled {
+                    Button(role: .destructive) {
+                        if let transaction = state.transaction {
+                            model.deleteTransaction(transaction: transaction)
+                            dismiss()
                         }
-                        dismiss()
+                    } label: {
+                        Text(state.deleteButtonTitle)
                     }
-                }) {
-                    Text(state.rightBarButtonTitle)
-                        .tint(Color.purpleAccent)
+                    .contentShape(Rectangle())
                 }
             }
+            .alert(Strings.ManageTransactionView.error, isPresented: $showAlert) {
+                Button(Strings.ManageTransactionView.ok, role: .cancel) { }
+            } message: {
+                Text(Strings.ManageTransactionView.emptyFields)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Text(Strings.ManageTransactionView.cancel)
+                            .tint(Color.purpleAccent)
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        if !isSavingAllowed() {
+                            showAlert = true
+                        } else {
+                            switch state {
+                            case .create:
+                                model.addTransaction(
+                                    category: selectedCategory,
+                                    amount: Decimal(string: amount) ?? 0,
+                                    transactionDate: selectedDateTime,
+                                    comment: transactionComment)
+                                
+                            case .edit(_, let transaction):
+                                model.editTransaction(
+                                    transaction: transaction,
+                                    newCategory: selectedCategory,
+                                    newAmount: Decimal(string: amount) ?? 0,
+                                    transactionDate: selectedDateTime,
+                                    comment: transactionComment)
+                            }
+                            dismiss()
+                        }
+                    }) {
+                        Text(state.rightBarButtonTitle)
+                            .tint(Color.purpleAccent)
+                    }
+                }
+            }
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle(state.title)
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(state.title)
     }
     
     var body: some View {

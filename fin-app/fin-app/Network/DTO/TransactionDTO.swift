@@ -14,4 +14,6 @@ struct TransactionDTO: Codable {
     let amount: String?
     let transactionDate: Date?
     let comment: String?
+    
+    
 }

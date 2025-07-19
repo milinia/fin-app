@@ -54,7 +54,7 @@ final class TransactionsService: TransactionsServiceProtocol {
             id: nil,
             accountId: userAccountId,
             categoryId: transactionInfo.categoryId,
-            amount: String(describing: transactionInfo.amount),
+            amount: transactionInfo.amount,
             transactionDate: transactionInfo.transactionDate,
             comment: transactionInfo.comment
         )

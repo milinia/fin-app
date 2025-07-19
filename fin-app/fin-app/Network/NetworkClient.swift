@@ -23,17 +23,24 @@ final class NetworkClient: NetworkClientProtocol {
     private let encoder: JSONEncoder
     
     init() {
-        self.token = "POF3GvINBhxG3SiS5WK7Ouzg"
+        self.token = ""
         self.urlSession = URLSession.shared
         self.decoder = JSONDecoder()
         self.encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .prettyPrinted
+        decoder.dateDecodingStrategy = .iso8601 
     }
     
     func request<T:Encodable, U: Decodable>(with data: T, endpoint: EndpointProtocol) async throws -> U {
         let encodedData = try await encode(data)
         let urlRequest = try await makeURLRequest(endpoint: endpoint, data: encodedData)
         do {
-            let (data, _) = try await urlSession.data(for: urlRequest)
+//            if let bodyString = String(data: urlRequest.httpBody ?? Data(), encoding: .utf8) {
+//                print("As String: \(bodyString)")
+//            }
+            let (data, response) = try await urlSession.data(for: urlRequest)
+            print(response)
             return try await decode(data)
         } catch {
             print(error)
