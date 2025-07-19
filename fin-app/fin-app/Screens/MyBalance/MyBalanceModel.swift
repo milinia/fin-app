@@ -7,9 +7,10 @@
 
 import Foundation
 
-final class MyBalanceModel: ObservableObject {
+final class MyBalanceModel: LoadableObject {
+    typealias DataType = BankAccount
     
-    @Published var bankAccount: BankAccount?
+    @Published var state: LoadingState<BankAccount>
     @Published var selectedCurrency: CurrencySign = .rub
     @Published var balance: Decimal = 0
     @Published var balanceString: String = ""
@@ -18,22 +19,31 @@ final class MyBalanceModel: ObservableObject {
     
     init(bankAccountService: BankAccountsServiceProtocol) {
         self.bankAccountService = bankAccountService
+        state = .loading
     }
     
-    func fetchBankAccount() {
-        Task {
-            do {
-                let account = try await bankAccountService.fetchBankAccount()
-                await setBankAccount(account)
+    func fetchBankAccount() async {
+        do {
+            let account = try await bankAccountService.fetchBankAccount()
+            guard let account = account else {
+                throw NetworkError.requestError
             }
+            await setBankAccount(account)
+        } catch {
+            await setError(error)
         }
     }
     
     @MainActor
+    private func setError(_ error: Error) {
+        state = .failed(error)
+    }
+    
+    @MainActor
     private func setBankAccount(_ account: BankAccount) {
-        bankAccount = account
+        state = .completed(account)
         
-        let currency = bankAccount?.currency ?? ""
+        let currency = account.currency
         let currencySign = CurrencySign(rawValue: currency) ?? .usd
         selectedCurrency = currencySign
         
@@ -46,8 +56,11 @@ final class MyBalanceModel: ObservableObject {
     func updateBankAccount() {
         Task {
             do {
-                let newAccount = try await bankAccountService.updateBankAccount(balance: balance,
+                guard let newAccount = try await bankAccountService.updateBankAccount(balance: balance,
                                                                                 currency: selectedCurrency.rawValue)
+                else {
+                    return
+                }
                 await setBankAccount(newAccount)
             }
         }

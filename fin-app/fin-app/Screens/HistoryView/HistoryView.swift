@@ -10,7 +10,7 @@ import UIKit
 
 struct HistoryView: View {
     
-    @ObservedObject var model: HistoryModel
+    @ObservedObject var model: HistoryViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var sortBy: SortBy = .byDate
@@ -23,12 +23,12 @@ struct HistoryView: View {
     
     private var direction: Direction
     
-    init(model: HistoryModel, direction: Direction) {
+    init(model: HistoryViewModel, direction: Direction) {
         self.model = model
         self.direction = direction
     }
     
-    private var commonInfoView: some View {
+    private func commonInfoView(transaction: Transaction?) -> some View {
         Section {
             HStack {
                 Text(Strings.HistoryView.start)
@@ -89,15 +89,15 @@ struct HistoryView: View {
             HStack {
                 Text(Strings.HistoryView.sum)
                 Spacer()
-                let currencySymbol = CurrencySign(rawValue: model.transactions.first?.account.currency ?? "USD")?.symbol ?? "$"
+                let currencySymbol = CurrencySign(rawValue: transaction?.account.currency ?? "USD")?.symbol ?? "$"
                 Text("\(model.totalAmount) \(currencySymbol)")
             }
         }
     }
     
-    private var operationsSection: some View {
+    private func operationsSection(transactions: [Transaction]) -> some View {
         Section(header: Text(Strings.TransactionsListView.operations)) {
-            ForEach(model.transactions) { transaction in
+            ForEach(transactions) { transaction in
                 HStack {
                     if direction == .outcome {
                         CircleEmojiIcon(emoji: String(transaction.category.emoji))
@@ -140,12 +140,12 @@ struct HistoryView: View {
         .padding(.horizontal, 30)
     }
     
-    var body: some View {
+    private func contentView(transactions: [Transaction]) -> some View {
         NavigationStack {
             ZStack {
                 List {
-                    commonInfoView
-                    operationsSection
+                    commonInfoView(transaction: transactions.first)
+                    operationsSection(transactions: transactions)
                 }
                 .navigationBarBackButtonHidden(true)
                 .toolbar {
@@ -193,12 +193,19 @@ struct HistoryView: View {
                 }
             }
         }
-        .onAppear {
-            model.fetchTransactions(direction: direction)
+    }
+    
+    var body: some View {
+        StatableContentView(source: model, content: { transactions in
+            contentView(transactions: transactions)
+        }, retryAction: {
+            Task {
+                await model.fetchTransactions(direction: direction)
+            }
+        })
+        .task {
+            await model.fetchTransactions(direction: direction)
         }
     }
 }
 
-#Preview {
-    HistoryView(model: HistoryModel(transactionsService: TransactionsService()), direction: .outcome)
-}

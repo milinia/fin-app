@@ -1,5 +1,5 @@
 //
-//  HistoryModel.swift
+//  HistoryViewModel.swift
 //  fin-app
 //
 //  Created by Evelina on 18.06.2025.
@@ -8,9 +8,11 @@
 import Foundation
 import SwiftUI
 
-final class HistoryModel: ObservableObject {
+final class HistoryViewModel: LoadableObject {
+    typealias DataType = [Transaction]
     
-    @Published var transactions: [Transaction] = []
+    
+    @Published var state: LoadingState<[Transaction]> = .loading
     @Published var totalAmount: Decimal = 0
     @Published var startOfThePeriod: Date
     @Published var endOfThePeriod: Date
@@ -25,23 +27,23 @@ final class HistoryModel: ObservableObject {
         endOfThePeriod = Date.startOfTomorrow
     }
     
-    func fetchTransactions(direction: Direction) {
-        Task {
-            do {
-                self.direction = direction
-                let transactions = try await transactionsService.fetchTransactions(from: startOfThePeriod, to: endOfThePeriod)
-                let neededTransactions = transactions.filter { $0.category.isIncome == direction }
-                let totalAmount = neededTransactions.reduce(0) { $0 + $1.amount }
-                await setData(transactions: neededTransactions, totalAmount: totalAmount)
-            } catch {
-                
-            }
+    func fetchTransactions(direction: Direction) async {
+        do {
+            self.direction = direction
+            let transactions = try await transactionsService.fetchTransactions(
+                from: startOfThePeriod,
+                to: endOfThePeriod,
+                by: direction)
+            let totalAmount = transactions.reduce(0) { $0 + $1.amount }
+            await setData(transactions: transactions, totalAmount: totalAmount)
+        } catch {
+            state = .failed(error)
         }
     }
     
     @MainActor
     private func setData(transactions: [Transaction], totalAmount: Decimal) {
-        self.transactions = transactions
+        self.state = .completed(transactions)
         self.totalAmount = totalAmount
     }
     
@@ -58,7 +60,9 @@ final class HistoryModel: ObservableObject {
             setEndOfThePeriod(startOfThePeriod)
         }
         
-        fetchTransactions(direction: direction)
+        Task {
+            await fetchTransactions(direction: direction)
+        }
     }
     
     func setEndOfThePeriod(_ date: Date) {
@@ -70,14 +74,21 @@ final class HistoryModel: ObservableObject {
             setStartOfThePeriod(endOfThePeriod)
         }
         
-        fetchTransactions(direction: direction)
+        Task {
+            await fetchTransactions(direction: direction)
+        }
     }
     
     func sortOperation(by value: SortBy) {
-        if value == .byDate {
-            transactions.sort(by: { $0.transactionDate > $1.transactionDate })
-        } else {
-            transactions.sort(by: { $0.amount > $1.amount })
+        Task {
+            guard var transactions = self.state.value else { return }
+            if value == .byDate {
+                transactions.sort(by: { $0.transactionDate > $1.transactionDate })
+            } else {
+                transactions.sort(by: { $0.amount > $1.amount })
+            }
+            
+            await setData(transactions: transactions, totalAmount: totalAmount)
         }
     }
 }

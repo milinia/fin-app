@@ -7,9 +7,10 @@
 
 import Foundation
 
-final class ManageTransactionViewModel: ObservableObject {
+final class ManageTransactionViewModel: LoadableObject {
+    typealias DataType = [Category]
     
-    @Published var categories: [Category] = []
+    @Published var state: LoadingState<[Category]>  = .idle
     
     private var categoriesService: CategoriesServiceProtocol
     var transactionsService: TransactionsServiceProtocol
@@ -33,43 +34,88 @@ final class ManageTransactionViewModel: ObservableObject {
     
     
     func fetchCategories(by direction: Direction) async {
+        if case .loading = state { return }
+        state = .loading
         do {
             let categories = try await categoriesService.fetchCategories(by: direction)
-            await setData(categories: categories)
+            await setCategories(categories: categories)
         } catch {
-            
+            await setError(error: error)
         }
     }
     
     @MainActor
-    private func setData(categories: [Category]) {
-        self.categories = categories
+    private func setCategories(categories: [Category]) {
+        self.state = .completed(categories)
     }
     
-    func addTransaction(account: BankAccount, category: Category?, amount: Decimal, comment: String) {
+    @MainActor
+    private func setError(error: Error) {
+        self.state = .failed(error)
+    }
+    
+    func addTransaction(
+        category: Category?,
+        amount: Decimal,
+        transactionDate: Date,
+        comment: String
+    ) {
         guard let category else { return }
         Task {
-            try await transactionsService.createTransaction(account: account,
-                                                  category: category,
-                                                  amount: amount,
-                                                  comment: comment)
+            try await transactionsService.createTransaction(transactionInfo: TransactionInfo(
+                id: nil,
+                accountId: nil,
+                currency: nil,
+                categoryId: category.id,
+                categoryName: category.name,
+                categoryEmoji: String(category.emoji),
+                isIncome: category.isIncome == .income ? true : false,
+                amount: String(describing: amount),
+                transactionDate: transactionDate,
+                comment: comment)
+            )
         }
     }
     
-    func editTransaction(transaction: Transaction, newCategory: Category?, newAmount: Decimal, comment: String) {
+    func editTransaction(
+        transaction: Transaction,
+        newCategory: Category?,
+        newAmount: Decimal,
+        transactionDate: Date,
+        comment: String
+    ) {
         guard let newCategory else { return }
         Task {
-            try await transactionsService.updateTransaction(transaction: transaction,
-                                                            newCategory: newCategory,
-                                                            newAmount: newAmount,
-                                                            comment: comment)
+            try await transactionsService.updateTransaction(transactionInfo: TransactionInfo(
+                id: transaction.id,
+                accountId: transaction.account.id,
+                currency: transaction.account.currency,
+                categoryId: newCategory.id,
+                categoryName: newCategory.name,
+                categoryEmoji: String(newCategory.emoji),
+                isIncome: newCategory.isIncome == .income ? true : false,
+                amount: String(describing: newAmount),
+                transactionDate: transactionDate,
+                comment: comment)
+            )
         }
     }
     
     func deleteTransaction(transaction: Transaction?) {
         guard let transaction else { return }
         Task {
-            try await transactionsService.deleteTransaction(transactionId: transaction.id)
+            try await transactionsService.deleteTransaction(transactionInfo: TransactionInfo(
+                id: transaction.id,
+                accountId: transaction.account.id,
+                currency: transaction.account.currency,
+                categoryId: transaction.category.id,
+                categoryName: transaction.category.name,
+                categoryEmoji: String(transaction.category.emoji),
+                isIncome: transaction.category.isIncome == .income ? true : false,
+                amount: String(describing: transaction.amount),
+                transactionDate: transaction.transactionDate,
+                comment: transaction.comment)
+            )
         }
     }
     

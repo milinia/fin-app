@@ -14,18 +14,14 @@ struct Transaction: Codable, Equatable, Identifiable {
     let amount: Decimal
     let transactionDate: Date
     let comment: String?
-    let createdAt: Date
-    let updatedAt: Date
     
-    init (id: Int, account: BankAccount, category: Category, amount: Decimal, transactionDate: Date, comment: String? = nil, createdAt: Date, updatedAt: Date) {
+    init (id: Int, account: BankAccount, category: Category, amount: Decimal, transactionDate: Date, comment: String? = nil) {
         self.id = id
         self.account = account
         self.category = category
         self.amount = amount
         self.transactionDate = transactionDate
         self.comment = comment
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
     }
     
     private enum CodingKeys: String, CodingKey {
@@ -57,16 +53,6 @@ struct Transaction: Codable, Equatable, Identifiable {
         self.transactionDate = transactionDate
         
         self.comment = try container.decodeIfPresent(String.self, forKey: .comment)
-        
-        guard let createdAt = try Transaction.decodeDate(key: .createdAt, container: container) else {
-            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: container, debugDescription: "Invalid date format")
-        }
-        self.createdAt = createdAt
-   
-        guard let updatedAt = try Transaction.decodeDate(key: .updatedAt, container: container) else {
-            throw DecodingError.dataCorruptedError(forKey: .updatedAt, in: container, debugDescription: "Invalid date format")
-        }
-        self.updatedAt = updatedAt
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -80,8 +66,6 @@ struct Transaction: Codable, Equatable, Identifiable {
         
         try container.encode(self.transactionDate, forKey: .transactionDate)
         try container.encodeIfPresent(self.comment, forKey: .comment)
-        try container.encode(self.createdAt, forKey: .createdAt)
-        try container.encode(self.updatedAt, forKey: .updatedAt)
     }
 }
 
@@ -133,9 +117,7 @@ extension Transaction {
         let bankAccountString = "\(account.id),\(account.name),\(account.balance),\(account.currency)"
         let categoryString = "\(category.id),\(category.name),\(category.emoji),\(category.isIncome == .income)"
         let transactionDateString = Transaction.dateFormatter.string(from: transactionDate)
-        let createdAtString = Transaction.dateFormatter.string(from: createdAt)
-        let updatedAtString = Transaction.dateFormatter.string(from: updatedAt)
-        return "\(id),\(bankAccountString),\(categoryString),\(amount),\(transactionDateString),\(comment ?? ""),\(createdAtString),\(updatedAtString)"
+        return "\(id),\(bankAccountString),\(categoryString),\(amount),\(transactionDateString),\(comment ?? "")"
     }
     
     static func parse(csvString: String) -> Transaction? {
@@ -153,8 +135,7 @@ extension Transaction {
         
         let category = Category(id: categoryId, name: components[6], emoji: Character(components[7]), isIncome: isIncome ? .income : .outcome)
         
-        guard let id = Int(components[0]), let amount = Decimal(string: components[9]), let transactionDate = Transaction.dateFormatter.date(from: components[10]),
-              let createdAt = Transaction.dateFormatter.date(from: components[12]), let updatedAt = Transaction.dateFormatter.date(from: components[13])
+        guard let id = Int(components[0]), let amount = Decimal(string: components[9]), let transactionDate = Transaction.dateFormatter.date(from: components[10])
         else {
             return nil
         }
@@ -164,8 +145,6 @@ extension Transaction {
                            category: category,
                            amount: amount,
                            transactionDate: transactionDate,
-                           comment: components[11],
-                           createdAt: createdAt,
-                           updatedAt: updatedAt)
+                           comment: components[11])
     }
 }

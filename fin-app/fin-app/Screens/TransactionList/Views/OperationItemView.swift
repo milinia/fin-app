@@ -40,19 +40,3 @@ struct OperationItemView: View {
     }
 }
 
-#Preview {
-    OperationItemView(operation: Transaction(id: 1,
-                                             account: BankAccount(id: 1,
-                                                                  name: "Основной счет",
-                                                                  balance: 100000.0,
-                                                                  currency: "RUB"),
-                                             category: Category(id: 1,
-                                                                name: "Зарплата",
-                                                                emoji: "💰",
-                                                                isIncome: .outcome),
-                                             amount: 60000.0,
-                                             transactionDate: Date(),
-                                             comment: "Джек",
-                                             createdAt: Date(),
-                                             updatedAt: Date()))
-}

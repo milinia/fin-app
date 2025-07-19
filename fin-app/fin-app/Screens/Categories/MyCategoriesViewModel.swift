@@ -8,31 +8,33 @@
 import Foundation
 import SwiftUI
 
-final class MyCategoriesViewModel: ObservableObject {
+final class MyCategoriesViewModel: LoadableObject {
+    typealias DataType = [Category]
     
-    @Published var categoriesToView: [Category] = []
+    @Published var state: LoadingState<[Category]> = .loading
     private var categories: [Category] = []
-    private let categoriesService: CategoriesService
+    private let categoriesService: CategoriesServiceProtocol
     private let fuzzySearchHelper: FuzzySearchHelperProtocol
     
-    init(categoriesService: CategoriesService, fuzzySearchHelper: FuzzySearchHelperProtocol) {
+    init(categoriesService: CategoriesServiceProtocol, fuzzySearchHelper: FuzzySearchHelperProtocol) {
         self.categoriesService = categoriesService
         self.fuzzySearchHelper = fuzzySearchHelper
     }
     
     func fetchCategories() async {
+        await setStateLoading()
         do {
             let categories = try await categoriesService.fetchAllCategories()
             await updateCategoriesToView(categories)
             await updateCategories(categories)
         } catch {
-            
+            await setError(error: error)
         }
     }
     
     func filterCategories(by searchText: String) {
         guard !searchText.isEmpty else {
-            categoriesToView = categories
+            self.state = .completed(categories)
             return
         }
     
@@ -43,8 +45,18 @@ final class MyCategoriesViewModel: ObservableObject {
     }
     
     @MainActor
+    private func setStateLoading() {
+        self.state = .loading
+    }
+    
+    @MainActor
+    private func setError(error: Error) {
+        self.state = .failed(error)
+    }
+    
+    @MainActor
     private func updateCategoriesToView(_ categories: [Category]) {
-        self.categoriesToView = categories
+        self.state = .completed(categories)
     }
     
     @MainActor
