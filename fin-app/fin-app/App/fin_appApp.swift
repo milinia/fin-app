@@ -12,7 +12,7 @@ import SwiftData
 struct fin_appApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            CategoryCacheModel.self, TransactionCacheModel.self, TransactionBackupModel.self, BankAccount.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -25,7 +25,7 @@ struct fin_appApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabBar(modelContainer: sharedModelContainer)
         }
         .modelContainer(sharedModelContainer)
     }

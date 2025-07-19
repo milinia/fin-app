@@ -12,8 +12,7 @@ struct ManageTransactionView: View {
     @ObservedObject var model: ManageTransactionViewModel
     @State var state: ManageTransactionScreenState
     @Environment(\.dismiss) var dismiss
-    @State private var selectedTime = Date()
-    @State private var selectedDate = Date()
+    @State private var selectedDateTime = Date()
     @State private var amount: String = ""
     @State private var transactionComment: String = ""
     @State private var selectedCategory: Category?
@@ -29,9 +28,9 @@ struct ManageTransactionView: View {
         _transactionComment = State(initialValue: state.initialComment)
     }
     
-    private var categoryPickerView: some View {
+    private func categoryPickerView(categories: [Category]) -> some View {
         Menu {
-            ForEach(model.categories, id: \.id) { category in
+            ForEach(categories, id: \.id) { category in
                 Button(action: {
                     selectedCategory = category
                 }) {
@@ -40,7 +39,7 @@ struct ManageTransactionView: View {
             }
         } label: {
             HStack(spacing: 4) {
-                Text(selectedCategory?.name ?? "")
+                Text(selectedCategory?.name ?? Strings.ManageTransactionView.chooseCategory)
                     .foregroundColor(.lightGray)
                     .padding(.trailing, 8)
                 AppIcons.TransactionsListViewIcons.arrowForward.image
@@ -51,12 +50,12 @@ struct ManageTransactionView: View {
         }
     }
     
-    private var commonInfoView: some View {
+    private func commonInfoView(categories: [Category]) -> some View {
         Section {
             HStack {
                 Text(Strings.ManageTransactionView.categories)
                 Spacer()
-                categoryPickerView
+                categoryPickerView(categories: categories)
             }
             
             HStack {
@@ -75,7 +74,7 @@ struct ManageTransactionView: View {
                 Text(Strings.ManageTransactionView.date)
                 Spacer()
                 DatePicker("",
-                           selection: $selectedDate,
+                           selection: $selectedDateTime,
                            in: ...Date(),
                            displayedComponents: .date)
                     .datePickerStyle(.compact)
@@ -87,7 +86,7 @@ struct ManageTransactionView: View {
                 Text(Strings.ManageTransactionView.time)
                 Spacer()
                 DatePicker("",
-                           selection: $selectedTime,
+                           selection: $selectedDateTime,
                            displayedComponents: .hourAndMinute)
                     .datePickerStyle(.compact)
                     .labelsHidden()
@@ -100,11 +99,11 @@ struct ManageTransactionView: View {
         }
     }
     
-    var body: some View {
-        NavigationView {
+    private func contentView(categories: [Category]) -> some View {
+        NavigationStack {
             Form {
-                commonInfoView
-
+                commonInfoView(categories: categories)
+                
                 if state.isDeleteButtonEnabled {
                     Button(role: .destructive) {
                         if let transaction = state.transaction {
@@ -131,24 +130,27 @@ struct ManageTransactionView: View {
                             .tint(Color.purpleAccent)
                     }
                 }
-
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         if !isSavingAllowed() {
                             showAlert = true
                         } else {
                             switch state {
-                            case .create(_, let bankAccount):
-                                model.addTransaction(account: bankAccount,
-                                                     category: selectedCategory,
-                                                     amount: Decimal(string: amount) ?? 0,
-                                                     comment: transactionComment)
-
+                            case .create:
+                                model.addTransaction(
+                                    category: selectedCategory,
+                                    amount: Decimal(string: amount) ?? 0,
+                                    transactionDate: selectedDateTime,
+                                    comment: transactionComment)
+                                
                             case .edit(_, let transaction):
-                                model.editTransaction(transaction: transaction,
-                                                      newCategory: selectedCategory,
-                                                      newAmount: Decimal(string: amount) ?? 0,
-                                                      comment: transactionComment)
+                                model.editTransaction(
+                                    transaction: transaction,
+                                    newCategory: selectedCategory,
+                                    newAmount: Decimal(string: amount) ?? 0,
+                                    transactionDate: selectedDateTime,
+                                    comment: transactionComment)
                             }
                             dismiss()
                         }
@@ -160,9 +162,19 @@ struct ManageTransactionView: View {
             }
             .navigationBarBackButtonHidden(true)
             .navigationTitle(state.title)
-            .task {
+        }
+    }
+    
+    var body: some View {
+        StatableContentView(source: model, content: { categories in
+            contentView(categories: categories)
+        }, retryAction: {
+            Task {
                 await model.fetchCategories(by: state.direction)
             }
+        })
+        .task {
+            await model.fetchCategories(by: state.direction)
         }
     }
 
@@ -173,8 +185,4 @@ struct ManageTransactionView: View {
         }
         return false
     }
-}
-
-#Preview {
-    ManageTransactionView(state: ManageTransactionScreenState.create(.income, BankAccount(id: 4, name: "", balance: 67, currency: "RUB")), model: ManageTransactionViewModel(categoriesService: CategoriesService(), transactionsService: TransactionsService()))
 }

@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import SwiftData
 
-struct BankAccount: Codable, Equatable {
+@Model
+final class BankAccount: Codable, Equatable, Sendable {
     let id: Int
-    let name: String
-    let balance: Decimal
-    let currency: String
+    var name: String
+    var balance: Decimal
+    var currency: String
     
     init (id: Int, name: String, balance: Decimal, currency: String) {
         self.id = id
@@ -27,7 +29,7 @@ struct BankAccount: Codable, Equatable {
         case currency
     }
     
-    init(from decoder: any Decoder) throws {
+    required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(Int.self, forKey: .id)
         self.name = try container.decode(String.self, forKey: .name)
