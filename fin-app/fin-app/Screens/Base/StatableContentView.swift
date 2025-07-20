@@ -21,8 +21,6 @@ struct StatableContentView<Source: LoadableObject, Content: View>: View {
                 content(data)
             case .failed(let error):
                 ErrorView(message: error.localizedDescription, action: retryAction)
-            case .idle:
-                EmptyView()
         }
     }
 }

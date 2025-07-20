@@ -7,9 +7,8 @@
 
 import Foundation
 
-enum LoadingState<T> {
+enum LoadingState<T: Equatable>: Equatable {
     case loading
-    case idle
     case completed(T)
     case failed(Error)
     
@@ -19,6 +18,19 @@ enum LoadingState<T> {
             return value
         default:
             return nil
+        }
+    }
+    
+    static func == (lhs: LoadingState<T>, rhs: LoadingState<T>) -> Bool {
+        switch (lhs, rhs) {
+        case (.loading, .loading):
+            return true
+        case let (.completed(a), .completed(b)):
+            return a == b
+        case (.failed, .failed):
+            return false
+        default:
+            return false
         }
     }
 }

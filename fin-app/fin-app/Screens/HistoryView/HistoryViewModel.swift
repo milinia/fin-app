@@ -12,7 +12,7 @@ final class HistoryViewModel: LoadableObject {
     typealias DataType = [Transaction]
     
     
-    @Published var state: LoadingState<[Transaction]> = .loading
+    @Published var state: LoadingState<[Transaction]>
     @Published var totalAmount: Decimal = 0
     @Published var startOfThePeriod: Date
     @Published var endOfThePeriod: Date
@@ -25,6 +25,8 @@ final class HistoryViewModel: LoadableObject {
         
         startOfThePeriod = Date.dayMonthAgo
         endOfThePeriod = Date.startOfTomorrow
+        
+        state = .loading
     }
     
     func fetchTransactions(direction: Direction) async {

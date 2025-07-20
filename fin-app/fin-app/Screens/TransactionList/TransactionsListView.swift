@@ -148,10 +148,10 @@ struct TransactionsListView: View {
     }
     
     var body: some View {
-        StatableContentView(source: model) { transactions, totalAmount in
+        StatableContentView(source: model) { data in
             contentView(
-                transactions: transactions,
-                totalAmount: totalAmount
+                transactions: data.transactions,
+                totalAmount: data.total
             )
         } retryAction: {
             Task {

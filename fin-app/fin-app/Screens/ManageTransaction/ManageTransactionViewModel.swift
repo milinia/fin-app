@@ -10,7 +10,7 @@ import Foundation
 final class ManageTransactionViewModel: LoadableObject {
     typealias DataType = [Category]
     
-    @Published var state: LoadingState<[Category]>  = .completed([])
+    @Published var state: LoadingState<[Category]>
     
     private var categoriesService: CategoriesServiceProtocol
     var transactionsService: TransactionsServiceProtocol
@@ -30,11 +30,11 @@ final class ManageTransactionViewModel: LoadableObject {
     init(categoriesService: CategoriesServiceProtocol, transactionsService: TransactionsServiceProtocol) {
         self.categoriesService = categoriesService
         self.transactionsService = transactionsService
+        state = .loading
     }
     
     
     func fetchCategories(by direction: Direction) async {
-        if case .loading = state { return }
         await setLoading()
         do {
             let categories = try await categoriesService.fetchCategories(by: direction)

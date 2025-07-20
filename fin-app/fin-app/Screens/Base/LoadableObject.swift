@@ -8,6 +8,6 @@
 import Foundation
 
 protocol LoadableObject: ObservableObject {
-    associatedtype DataType
+    associatedtype DataType: Equatable
     var state: LoadingState<DataType> { get }
 }

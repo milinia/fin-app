@@ -10,31 +10,43 @@ import Foundation
 final class AnalysisViewModel: LoadableObject {
     typealias DataType = [GroupedTransactions]
     
-    @Published var state: LoadingState<[GroupedTransactions]> = .loading
+    @Published var state: LoadingState<[GroupedTransactions]>
     @Published var totalAmount: Decimal = 0
     
     private var transactionService: TransactionsServiceProtocol
     
     init(transactionService: TransactionsServiceProtocol) {
         self.transactionService = transactionService
+        state = .loading
     }
     
 
     func fetchTransactions(direction: Direction, startOfThePeriod: Date, endOfThePeriod: Date) async {
+//        if case .loading = state { return }
+        await setLoading()
         do {
             let transactions = try await transactionService.fetchTransactions(
                 from: startOfThePeriod,
                 to: endOfThePeriod,
                 by: direction
             )
-            totalAmount = transactions.reduce(0) { $0 + $1.amount }
+            await setTotal(transactions: transactions)
             await groupTransactions(transactions: transactions)
         } catch {
             state = .failed(error)
         }
     }
-
     
+    @MainActor
+    private func setLoading() {
+        self.state = .loading
+    }
+    
+    @MainActor
+    private func setTotal(transactions: [Transaction]) {
+        self.totalAmount = transactions.reduce(0) { $0 + $1.amount }
+    }
+
     @MainActor
     private func groupTransactions(transactions: [Transaction]) {
         var dict: [Category: Decimal] = [:]

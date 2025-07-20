@@ -27,12 +27,13 @@ struct AnalysisView: View {
     
     var body: some View {
         StatableContentView(source: model) { groupedTransactions in
-            transactions = groupedTransactions
-            return AnalysisViewControllerRepresentableView(transactions: $transactions,
-                                                    totalAmount: $totalAmount,
-                                                    startDate: $startDate,
-                                                    endDate: $endDate,
-                                                    sortBy: $sortBy)
+            return AnalysisViewControllerRepresentableView(
+                transactions: .constant(groupedTransactions),
+                totalAmount: .constant(model.totalAmount),
+                startDate: $startDate,
+                endDate: $endDate,
+                sortBy: $sortBy
+            )
             .onChange(of: [startDate, endDate]) {
                 Task {
                     await model.fetchTransactions(direction: direction, startOfThePeriod: startDate, endOfThePeriod: endDate)
@@ -53,13 +54,17 @@ struct AnalysisView: View {
             }
         }
         .task {
-            await model.fetchTransactions(direction: direction, startOfThePeriod: startDate, endOfThePeriod: endDate)
+            await model.fetchTransactions(
+                direction: direction,
+                startOfThePeriod: startDate,
+                endOfThePeriod: endDate)
         }
     }
     
+    @MainActor
     private func updateTransactions(groupedTransactions: [GroupedTransactions]) {
-        transactions = model.state.value ?? []
-        initialTransactions = model.state.value ?? []
+        transactions = groupedTransactions
+        initialTransactions = groupedTransactions
         totalAmount = model.totalAmount
     }
 }

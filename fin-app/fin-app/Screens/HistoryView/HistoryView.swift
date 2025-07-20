@@ -12,6 +12,9 @@ struct HistoryView: View {
     
     @ObservedObject var model: HistoryViewModel
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var dependencies: AppDependencies
+    
+    @StateObject private var analysisModel: AnalysisViewModel
     
     @State private var sortBy: SortBy = .byDate
     @State private var showStartDatePicker = false
@@ -26,6 +29,12 @@ struct HistoryView: View {
     init(model: HistoryViewModel, direction: Direction) {
         self.model = model
         self.direction = direction
+        
+        _analysisModel = StateObject(
+                    wrappedValue: AnalysisViewModel(
+                        transactionService: model.transactionsService
+                    )
+                )
     }
     
     private func commonInfoView(transaction: Transaction?) -> some View {
@@ -163,7 +172,10 @@ struct HistoryView: View {
                     
                     ToolbarItem(placement: .navigationBarTrailing) {
                         NavigationLink {
-                            AnalysisView(model: AnalysisViewModel(transactionService: model.transactionsService), direction: direction)
+                            AnalysisView(
+                                model: analysisModel,
+                                direction: direction
+                            )
                         } label: {
                             AppIcons.HistoryViewIcons.file.image
                         }

@@ -7,10 +7,15 @@
 
 import Foundation
 
+struct TransactionData: Equatable {
+    let transactions: [Transaction]
+    let total: Decimal
+}
+
 final class TransactionsListModel: LoadableObject {
-    typealias DataType = ([Transaction], Decimal)
+    typealias DataType = TransactionData
     
-    @Published var state: LoadingState<([Transaction], Decimal)>
+    @Published var state: LoadingState<TransactionData>
     
     let transactionsService: TransactionsServiceProtocol
     
@@ -44,7 +49,7 @@ final class TransactionsListModel: LoadableObject {
     
     @MainActor
     private func setData(transactions: [Transaction], totalAmount: Decimal) {
-        state = .completed( (transactions, totalAmount) )
+        state = .completed( TransactionData(transactions: transactions, total: totalAmount) )
     }
     
     @MainActor
