@@ -12,8 +12,8 @@ struct TabBar: View {
     
     @StateObject private var dependencies: AppDependencies
 
-    init(modelContainer: ModelContainer) {
-        _dependencies = StateObject(wrappedValue: AppDependencies(modelContainer: modelContainer))
+    init(dependencies: AppDependencies) {
+        _dependencies = StateObject(wrappedValue: dependencies)
     }
     
     

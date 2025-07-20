@@ -56,6 +56,7 @@ actor CategorySwiftDataCache: ModelActor, CategoryCacheProtocol {
         
         for category in categories {
             let categoryModel = CategoryCacheModel(from: category)
+            print(category)
             modelContext.insert(categoryModel)
         }
         

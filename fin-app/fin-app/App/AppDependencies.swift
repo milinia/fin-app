@@ -21,18 +21,20 @@ final class AppDependencies: ObservableObject {
     let bankAccountCache: BankAccountCacheProtocol
     let transactionBackup: TransactionBackupProtocol
 
-    init(modelContainer: ModelContainer) {
-        self.networkClient = NetworkClient()
-        
+    private init(
+        userAccountId: Int,
+        modelContainer: ModelContainer,
+        networkClient: NetworkClientProtocol
+    ) {
+        self.networkClient = networkClient
+
         self.categoriesCache = CategorySwiftDataCache(modelContainer: modelContainer)
         self.transactionCache = TransactionSwiftDataCache(modelContainer: modelContainer)
         self.bankAccountCache = BankAccountSwiftDataCache(modelContainer: modelContainer)
-        
         self.bankAccountService = BankAccountsService(networkClient: networkClient, bankAccountCache: bankAccountCache)
         self.transactionBackup = TransactionBackupCache(modelContainer: modelContainer)
-
         self.transactionService = TransactionsService(
-            userAccountId: 105,
+            userAccountId: userAccountId,
             networkClient: networkClient,
             transactionBackupCache: transactionBackup,
             transactionCache: transactionCache,
@@ -40,4 +42,19 @@ final class AppDependencies: ObservableObject {
         )
         self.categoryService = CategoriesService(networkClient: networkClient, categoriesCache: categoriesCache)
     }
+
+    static func make(modelContainer: ModelContainer) async throws -> AppDependencies {
+        let networkClient = NetworkClient()
+        let bankAccountService = BankAccountsService(networkClient: networkClient, bankAccountCache: BankAccountSwiftDataCache(modelContainer: modelContainer))
+
+        let bankAccount = try await bankAccountService.fetchBankAccount()
+        let userAccountId = bankAccount?.id ?? 0
+
+        return AppDependencies(
+            userAccountId: userAccountId,
+            modelContainer: modelContainer,
+            networkClient: networkClient
+        )
+    }
 }
+

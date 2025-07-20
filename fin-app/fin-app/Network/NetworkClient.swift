@@ -36,14 +36,9 @@ final class NetworkClient: NetworkClientProtocol {
         let encodedData = try await encode(data)
         let urlRequest = try await makeURLRequest(endpoint: endpoint, data: encodedData)
         do {
-//            if let bodyString = String(data: urlRequest.httpBody ?? Data(), encoding: .utf8) {
-//                print("As String: \(bodyString)")
-//            }
-            let (data, response) = try await urlSession.data(for: urlRequest)
-            print(response)
+            let (data, _) = try await urlSession.data(for: urlRequest)
             return try await decode(data)
         } catch {
-            print(error)
             if error is DecodingError {
                 throw NetworkError.decodingFailed
             } else {

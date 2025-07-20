@@ -25,7 +25,7 @@ struct fin_appApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabBar(modelContainer: sharedModelContainer)
+            TabBarContainer(modelContainer: sharedModelContainer)
         }
         .modelContainer(sharedModelContainer)
     }

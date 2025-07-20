@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class BankAccount: Codable, Equatable, Sendable {
-    let id: Int
+    var id: Int
     var name: String
     var balance: Decimal
     var currency: String
