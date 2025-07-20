@@ -37,8 +37,7 @@ final class AppDependencies: ObservableObject {
             userAccountId: userAccountId,
             networkClient: networkClient,
             transactionBackupCache: transactionBackup,
-            transactionCache: transactionCache,
-            bankAccountsService: bankAccountService
+            transactionCache: transactionCache
         )
         self.categoryService = CategoriesService(networkClient: networkClient, categoriesCache: categoriesCache)
     }

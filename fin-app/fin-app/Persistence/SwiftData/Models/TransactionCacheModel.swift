@@ -11,10 +11,10 @@ import SwiftData
 @Model
 final class TransactionCacheModel: Sendable {
     @Attribute(.unique)
-    let id: Int
-    @Relationship
+    var id: Int
+    @Relationship(deleteRule: .cascade)
     var account: BankAccount
-    @Relationship
+    @Relationship(deleteRule: .cascade)
     var category: CategoryCacheModel
     var amount: String
     var transactionDate: Date

@@ -61,6 +61,7 @@ enum TransactionEndpoints: EndpointProtocol {
     case deleteTransaction(id: Int)
     case updateTransaction(id: Int, transaction: TransactionDTO)
     case getTransaction(accountId: Int, startDate: Date, endDate: Date)
+    case getTransactionById(id: Int)
     
     var path: String {
         switch self {
@@ -72,6 +73,8 @@ enum TransactionEndpoints: EndpointProtocol {
             return "/transactions/\(id)"
         case .getTransaction(let accountId, _, _):
             return "/transactions/account/\(accountId)/period"
+        case .getTransactionById(let id):
+            return "/transactions/\(id)"
         }
     }
     
@@ -83,7 +86,7 @@ enum TransactionEndpoints: EndpointProtocol {
             return "PUT"
         case .deleteTransaction:
             return "DELETE"
-        case .getTransaction:
+        case .getTransaction, .getTransactionById:
             return "GET"
         }
     }
@@ -92,14 +95,14 @@ enum TransactionEndpoints: EndpointProtocol {
         switch self {
         case .createTransaction, .updateTransaction:
             return true
-        case .deleteTransaction, .getTransaction:
+        case .deleteTransaction, .getTransaction, .getTransactionById:
             return false
         }
     }
     
     var hasResponseBody: Bool {
         switch self {
-        case .createTransaction, .updateTransaction, .getTransaction:
+        case .createTransaction, .updateTransaction, .getTransaction, .getTransactionById:
             return true
         case .deleteTransaction:
             return false

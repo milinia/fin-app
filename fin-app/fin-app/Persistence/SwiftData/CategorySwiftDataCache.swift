@@ -50,14 +50,16 @@ actor CategorySwiftDataCache: ModelActor, CategoryCacheProtocol {
             FetchDescriptor<CategoryCacheModel>(predicate: nil)
         )
         
-        for existingCategory in existingCategories {
-            modelContext.delete(existingCategory)
-        }
-        
+        let existingMap: [Int: CategoryCacheModel] = Dictionary(uniqueKeysWithValues: existingCategories.map { ($0.id, $0) })
+    
         for category in categories {
-            let categoryModel = CategoryCacheModel(from: category)
-            print(category)
-            modelContext.insert(categoryModel)
+            if let existingModel = existingMap[category.id] {
+                existingModel.name = category.name
+                existingModel.emoji = String(category.emoji)
+                existingModel.isIncome = category.isIncome == .income
+            } else {
+                modelContext.insert(CategoryCacheModel(from: category))
+            }
         }
         
         if modelContext.hasChanges {

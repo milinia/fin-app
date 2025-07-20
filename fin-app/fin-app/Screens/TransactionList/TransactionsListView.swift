@@ -31,11 +31,20 @@ struct TransactionsListView: View {
     @State private var isShowingHistory = false
     @State private var activeModal: ActiveModal?
     
+//    @StateObject private var manageTransactionModel: ManageTransactionViewModel
+    
     private let direction: Direction
     
     init(direction: Direction, model: TransactionsListModel) {
         self.direction = direction
         self.model = model
+        
+//        _manageTransactionModel = StateObject(
+//            wrappedValue: ManageTransactionViewModel(
+//                categoriesService: dependencies.categoryService,
+//                transactionsService: model.transactionsService
+//            )
+//        )
     }
     
     private func totalSection(transaction: Transaction?, totalAmount: Decimal) -> some View {

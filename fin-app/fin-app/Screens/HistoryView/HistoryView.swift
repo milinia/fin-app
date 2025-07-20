@@ -31,10 +31,10 @@ struct HistoryView: View {
         self.direction = direction
         
         _analysisModel = StateObject(
-                    wrappedValue: AnalysisViewModel(
-                        transactionService: model.transactionsService
-                    )
-                )
+            wrappedValue: AnalysisViewModel(
+                transactionService: model.transactionsService
+            )
+        )
     }
     
     private func commonInfoView(transaction: Transaction?) -> some View {

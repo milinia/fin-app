@@ -10,6 +10,7 @@ import SwiftData
 
 @Model
 final class BankAccount: Codable, Equatable, Sendable {
+    @Attribute(.unique)
     var id: Int
     var name: String
     var balance: Decimal

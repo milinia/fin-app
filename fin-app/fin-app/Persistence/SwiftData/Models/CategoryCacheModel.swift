@@ -15,7 +15,7 @@ final class CategoryCacheModel: Sendable {
     var name: String
     var emoji: String
     var isIncome: Bool
-    
+
     init(
         id: Int,
         name: String,

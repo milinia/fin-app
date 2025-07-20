@@ -40,7 +40,11 @@ actor BankAccountSwiftDataCache: ModelActor, BankAccountCacheProtocol {
         )
         categoryDescriptor.fetchLimit = 1
         
-        guard let account = try modelContext.fetch(categoryDescriptor).first else {
+        if let existingAccount = try modelContext.fetch(categoryDescriptor).first {
+            existingAccount.name = newName
+            existingAccount.currency = newCurrency
+            existingAccount.balance = newAmount
+        } else {
             let account = BankAccount(id: id, name: newName, balance: newAmount, currency: newCurrency)
             
             modelContext.insert(account)
@@ -50,9 +54,6 @@ actor BankAccountSwiftDataCache: ModelActor, BankAccountCacheProtocol {
             
             return
         }
-        account.name = newName
-        account.currency = newCurrency
-        account.balance = newAmount
         
         if modelContext.hasChanges {
             try modelContext.save()

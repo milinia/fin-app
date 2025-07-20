@@ -74,6 +74,7 @@ enum Strings {
         static let deleteOutcome = "Удалить расход"
         static let error = "Ошибка"
         static let ok = "Oк"
+        static let comment = "Комментарий"
         static let emptyFields = "Заполните, пожалуйста, все поля"
     }
 }

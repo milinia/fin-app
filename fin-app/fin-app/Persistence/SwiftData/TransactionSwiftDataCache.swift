@@ -111,10 +111,13 @@ actor TransactionSwiftDataCache: ModelActor, TransactionCacheProtocol {
         if let existingTransaction = try fetchTransaction(by: transaction.id) {
             updateParameters(existingTransaction: existingTransaction, transaction: transaction)
         } else {
+            let categoryModel = try fetchOrCreateCategory(from: transaction.category)
+            let accountModel = try fetchOrCreateBankAccount(by: transaction.account)
+            
             let newTransactionCacheModel = TransactionCacheModel(
                 id: transaction.id,
-                account: transaction.account,
-                category: CategoryCacheModel(from: transaction.category),
+                account: accountModel,
+                category: categoryModel,
                 amount: String(describing: transaction.amount),
                 transactionDate: transaction.transactionDate,
                 currency: transaction.account.currency,
@@ -124,13 +127,50 @@ actor TransactionSwiftDataCache: ModelActor, TransactionCacheProtocol {
         }
     }
     
-    private func updateParameters(existingTransaction: TransactionCacheModel, transaction: Transaction) {
-        existingTransaction.category = CategoryCacheModel(
-            id: transaction.category.id,
-            name: transaction.category.name,
-            emoji: String(transaction.category.emoji),
-            isIncome: transaction.category.isIncome == .income ? true : false
+    func fetchOrCreateCategory(from category: Category) throws -> CategoryCacheModel {
+        let descriptor = FetchDescriptor<CategoryCacheModel>(
+            predicate: #Predicate { $0.id == category.id }
         )
+        
+        if let existing = try modelContext.fetch(descriptor).first {
+            return existing
+        } else {
+            let newCategory = CategoryCacheModel(
+                id: category.id,
+                name: category.name,
+                emoji: String(category.emoji),
+                isIncome: category.isIncome == .income
+            )
+            modelContext.insert(newCategory)
+            return newCategory
+        }
+    }
+    
+    func fetchOrCreateBankAccount(by account: BankAccount) throws -> BankAccount {
+        let descriptor = FetchDescriptor<BankAccount>(
+            predicate: #Predicate { $0.id == account.id }
+        )
+        if let existing = try modelContext.fetch(descriptor).first {
+            return existing
+        } else {
+            let newAccount = BankAccount(
+                id: account.id,
+                name: account.name,
+                balance: account.balance,
+                currency: account.currency
+            )
+            modelContext.insert(newAccount)
+            return newAccount
+        }
+    }
+    
+    private func updateParameters(existingTransaction: TransactionCacheModel, transaction: Transaction) {
+        do {
+            let updatedCategory = try fetchOrCreateCategory(from: transaction.category)
+            existingTransaction.category = updatedCategory
+        } catch {
+            print("Failed to fetch/create category: \(error)")
+        }
         
         existingTransaction.account = transaction.account
         existingTransaction.amount = String(describing: transaction.amount)

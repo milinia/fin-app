@@ -9,7 +9,7 @@ import Foundation
 
 protocol TransactionsServiceProtocol {
     func fetchTransactions(from: Date, to: Date, by direction: Direction?) async throws -> [Transaction]
-    func createTransaction(transactionInfo: TransactionInfo) async throws -> TransactionDTO?
+    func createTransaction(transactionInfo: TransactionInfo) async throws -> Transaction?
     func updateTransaction(transactionInfo: TransactionInfo) async throws -> Transaction?
     func deleteTransaction(transactionInfo: TransactionInfo) async throws
 }
@@ -20,14 +20,12 @@ final class TransactionsService: TransactionsServiceProtocol {
     private let networkClient: NetworkClientProtocol
     private let transactionBackupCache: TransactionBackupProtocol
     private let transactionCache: TransactionCacheProtocol
-    private let bankAccountsService: BankAccountsServiceProtocol
     
-    init(userAccountId: Int, networkClient: NetworkClientProtocol, transactionBackupCache: TransactionBackupProtocol, transactionCache: TransactionCacheProtocol, bankAccountsService: BankAccountsServiceProtocol) {
+    init(userAccountId: Int, networkClient: NetworkClientProtocol, transactionBackupCache: TransactionBackupProtocol, transactionCache: TransactionCacheProtocol) {
         self.userAccountId = userAccountId
         self.networkClient = networkClient
         self.transactionBackupCache = transactionBackupCache
         self.transactionCache = transactionCache
-        self.bankAccountsService = bankAccountsService
     }
     
     func fetchTransactions(from: Date, to: Date, by direction: Direction? = nil) async throws -> [Transaction] {
@@ -49,7 +47,7 @@ final class TransactionsService: TransactionsServiceProtocol {
         }
     }
     
-    func createTransaction(transactionInfo: TransactionInfo) async throws -> TransactionDTO? {
+    func createTransaction(transactionInfo: TransactionInfo) async throws -> Transaction? {
         let newTransaction = TransactionDTO(
             id: nil,
             accountId: userAccountId,
@@ -60,31 +58,17 @@ final class TransactionsService: TransactionsServiceProtocol {
         )
         
         do {
-            let transaction: TransactionDTO = try await networkClient.request(
+            let transactionData: TransactionDTO = try await networkClient.request(
                 with: newTransaction,
                 endpoint: TransactionEndpoints.createTransaction(transaction: newTransaction)
             )
             
-            let newTransaction = Transaction(
-                id: transaction.id ?? 0,
-                account: BankAccount(
-                    id: transaction.accountId ?? 0,
-                    name: "",
-                    balance: 0,
-                    currency: ""
-                ),
-                category: Category(
-                    id: transaction.categoryId ?? 0,
-                    name: transactionInfo.categoryName ?? "",
-                    emoji: transactionInfo.categoryEmoji?.first ?? " ",
-                    isIncome: transactionInfo.isIncome ?? true ? .income : .outcome),
-                amount: Decimal(string: transaction.amount ?? "0") ?? 0,
-                transactionDate: transaction.transactionDate ?? Date(),
-                comment: transaction.comment
+            let transactionFullData: Transaction = try await networkClient.request(
+                endpoint: TransactionEndpoints.getTransactionById(id: transactionData.id ?? 0)
             )
             
-            try await transactionCache.addTransaction(newTransaction)
-            return transaction
+            try await transactionCache.addTransaction(transactionFullData)
+            return transactionFullData
         } catch {
             try await transactionBackupCache.addBackup(for: transactionInfo, action: .create)
             return nil
