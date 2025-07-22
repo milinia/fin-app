@@ -79,6 +79,7 @@ class InfoView: UIView {
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .compact
         picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.date = Date.dayMonthAgo
         picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         return picker
     }()
@@ -87,6 +88,7 @@ class InfoView: UIView {
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .compact
+        picker.date = Date.startOfTomorrow
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         return picker

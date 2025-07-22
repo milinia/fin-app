@@ -73,7 +73,7 @@ struct MyBalanceView: View {
        .cornerRadius(8)
     }
     
-    var body: some View {
+    private func contentView() -> some View {
         NavigationStack {
             ZStack {
                 if showingCurrencyPopover {
@@ -92,7 +92,9 @@ struct MyBalanceView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .refreshable {
-                    model.fetchBankAccount()
+                    Task {
+                        await model.fetchBankAccount()
+                    }
                 }
                 
                 if state == .edit && showingCurrencyPopover {
@@ -104,9 +106,6 @@ struct MyBalanceView: View {
                 }
             }
             .background(Color(.systemGroupedBackground))
-            .onAppear {
-                model.fetchBankAccount()
-            }
             .onTapGesture {
                 if showingCurrencyPopover {
                     showingCurrencyPopover.toggle()
@@ -137,8 +136,17 @@ struct MyBalanceView: View {
             isBalanceHidden.toggle()
         }
     }
-}
-
-#Preview {
-    MyBalanceView(model: MyBalanceModel(bankAccountService: BankAccountsService()))
+    
+    var body: some View {
+        StatableContentView(source: model) { bankAccount in
+            contentView()
+        } retryAction: {
+            Task {
+                await model.fetchBankAccount()
+            }
+        }
+        .task {
+            await model.fetchBankAccount()
+        }
+    }
 }

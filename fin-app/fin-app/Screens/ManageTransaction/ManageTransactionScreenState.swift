@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 enum ManageTransactionScreenState {
-    case create(Direction, BankAccount)
+    case create(Direction)
     case edit(Direction, Transaction)
     
     var isDeleteButtonEnabled: Bool {
@@ -34,7 +34,7 @@ enum ManageTransactionScreenState {
         switch self {
         case .edit(let direction, _):
             return direction == .income ? "Мои Доходы" : "Мои Расходы"
-        case .create(let direction, _):
+        case .create(let direction):
             return direction == .income ? "Мои Доходы" : "Мои Расходы"
         }
     }
@@ -78,7 +78,7 @@ enum ManageTransactionScreenState {
     var date: Date {
         switch self {
             case .edit(_, let transaction):
-            return transaction.createdAt
+            return transaction.transactionDate
         case .create:
             return Date()
         }
@@ -88,7 +88,7 @@ enum ManageTransactionScreenState {
         switch self {
         case .edit(let direction, _):
             return direction
-        case .create(let direction, _):
+        case .create(let direction):
             return direction
         }
     }
@@ -126,15 +126,6 @@ enum ManageTransactionScreenState {
             return transaction
         case .create:
             return nil
-        }
-    }
-    
-    var bankAccount: BankAccount {
-        switch self {
-            case .edit(_, let transaction):
-            return transaction.account
-        case .create(_, let bankAccount):
-            return bankAccount
         }
     }
 }

@@ -24,41 +24,48 @@ struct AnalysisView: View {
         self.direction = direction
     }
     
+    
     var body: some View {
-        AnalysisViewControllerRepresentableView(transactions: $transactions,
-                                                totalAmount: $totalAmount,
-                                                startDate: $startDate,
-                                                endDate: $endDate,
-                                                sortBy: $sortBy)
-        .onChange(of: [startDate, endDate]) {
-            Task {
-                await updateTransactions()
-            }
-        }
-        .onChange(of: sortBy) {
-            Task {
-                if sortBy == .byDate {
-                    transactions = initialTransactions
-                } else {
-                    transactions.sort { $0.amount > $1.amount }
+        StatableContentView(source: model) { groupedTransactions in
+            return AnalysisViewControllerRepresentableView(
+                transactions: .constant(groupedTransactions),
+                totalAmount: .constant(model.totalAmount),
+                startDate: $startDate,
+                endDate: $endDate,
+                sortBy: $sortBy
+            )
+            .onChange(of: [startDate, endDate]) {
+                Task {
+                    await model.fetchTransactions(direction: direction, startOfThePeriod: startDate, endOfThePeriod: endDate)
                 }
+            }
+            .onChange(of: sortBy) {
+                Task {
+                    if sortBy == .byDate {
+                        transactions = initialTransactions
+                    } else {
+                        transactions.sort { $0.amount > $1.amount }
+                    }
+                }
+            }
+        } retryAction: {
+            Task {
+                await model.fetchTransactions(direction: direction, startOfThePeriod: startDate, endOfThePeriod: endDate)
             }
         }
         .task {
-            await updateTransactions()
+            await model.fetchTransactions(
+                direction: direction,
+                startOfThePeriod: startDate,
+                endOfThePeriod: endDate)
         }
     }
     
-    private func updateTransactions() async {
-        await model.fetchTransactions(direction: direction,
-                                      startOfThePeriod: startDate,
-                                      endOfThePeriod: endDate)
-        transactions = model.groupedTransactions
-        initialTransactions = model.groupedTransactions
+    @MainActor
+    private func updateTransactions(groupedTransactions: [GroupedTransactions]) {
+        transactions = groupedTransactions
+        initialTransactions = groupedTransactions
         totalAmount = model.totalAmount
     }
 }
 
-#Preview {
-    AnalysisView(model: AnalysisViewModel(transactionService: TransactionsService()), direction: .income)
-}

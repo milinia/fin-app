@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum ActiveModal: Equatable {
-    case create(BankAccount)
+    case create
     case edit(Transaction)
 }
 
@@ -24,12 +24,14 @@ extension ActiveModal: Identifiable {
 }
 
 struct TransactionsListView: View {
+    
+    @EnvironmentObject var dependencies: AppDependencies
 
     @ObservedObject var model: TransactionsListModel
-    
-    @StateObject private var manageTransactionViewModel: ManageTransactionViewModel
     @State private var isShowingHistory = false
     @State private var activeModal: ActiveModal?
+    
+//    @StateObject private var manageTransactionModel: ManageTransactionViewModel
     
     private let direction: Direction
     
@@ -37,30 +39,30 @@ struct TransactionsListView: View {
         self.direction = direction
         self.model = model
         
-        self._manageTransactionViewModel = StateObject(
-                    wrappedValue: ManageTransactionViewModel(
-                        categoriesService: CategoriesService(),
-                        transactionsService: model.transactionsService
-                    )
-                )
+//        _manageTransactionModel = StateObject(
+//            wrappedValue: ManageTransactionViewModel(
+//                categoriesService: dependencies.categoryService,
+//                transactionsService: model.transactionsService
+//            )
+//        )
     }
     
-    private var totalSection: some View {
+    private func totalSection(transaction: Transaction?, totalAmount: Decimal) -> some View {
         Section {
             HStack {
                 Text(Strings.TransactionsListView.total)
                 Spacer()
                 
-                let amount = String(describing: model.totalAmount).amountFormatted()
-                let currency = CurrencySign(rawValue: model.transactions.first?.account.currency ?? "USD")?.symbol ?? "$"
+                let amount = String(describing: totalAmount).amountFormatted()
+                let currency = CurrencySign(rawValue: transaction?.account.currency ?? "USD")?.symbol ?? "$"
                 Text("\(amount) \(currency)")
             }
         }
     }
     
-    private var operationsSection: some View {
-        Section(header: Text(Strings.TransactionsListView.operations)) {
-            ForEach(model.transactions) { transaction in
+    private func operationsSection(transactions: [Transaction]) -> some View {
+        Section(header: Text(transactions.isEmpty ? Strings.TransactionsListView.noOperations : Strings.TransactionsListView.operations)) {
+            ForEach(transactions) { transaction in
                 HStack {
                     if direction == .outcome {
                         CircleEmojiIcon(emoji: String(transaction.category.emoji))
@@ -79,15 +81,13 @@ struct TransactionsListView: View {
         }
     }
     
-    private var addTransactionButton: some View {
+    private func addTransactionButton(transaction: Transaction?) -> some View {
         VStack {
             Spacer()
             HStack {
                 Spacer()
                 Button(action: {
-                    if let bankAccount = model.transactions.first?.account {
-                        activeModal = .create(bankAccount)
-                    }
+                    activeModal = .create
                 }) {
                     Image(systemName: "plus")
                         .foregroundColor(.white)
@@ -102,20 +102,26 @@ struct TransactionsListView: View {
         }
     }
     
-    var body: some View {
+    private func contentView(transactions: [Transaction], totalAmount: Decimal) -> some View {
         NavigationStack {
             ZStack {
                 List {
-                    totalSection
-                    operationsSection
+                    totalSection(transaction: transactions.first, totalAmount: totalAmount)
+                    operationsSection(transactions: transactions)
                 }
-                addTransactionButton
+                addTransactionButton(transaction: transactions.first)
             }
             .onChange(of: activeModal, {
-                model.fetchTransactions(direction: direction)
+                Task {
+                    await model.fetchTransactions(direction: direction)
+                }
             })
             .navigationDestination(isPresented: $isShowingHistory) {
-                HistoryView(model: HistoryModel(transactionsService: TransactionsService()), direction: direction)
+                HistoryView(model:
+                                HistoryViewModel(
+                                    transactionsService: dependencies.transactionService),
+                            direction: direction
+                )
             }
             .navigationTitle(direction == .income ? Strings.TransactionsListView.incomeTitle : Strings.TransactionsListView.outcomeTitle)
             .toolbar {
@@ -128,26 +134,41 @@ struct TransactionsListView: View {
                 }
             }
         }
-        .onAppear {
-            model.fetchTransactions(direction: direction)
-        }
         .fullScreenCover(item: $activeModal) { modal in
             switch modal {
-            case .create(let bankAccount):
+            case .create:
                 ManageTransactionView(
-                    state: .create(direction, bankAccount),
-                    model: manageTransactionViewModel
+                    state: .create(direction),
+                    model: ManageTransactionViewModel(
+                        categoriesService: dependencies.categoryService,
+                        transactionsService: dependencies.transactionService
+                    )
                 )
             case .edit(let transaction):
                 ManageTransactionView(
                     state: .edit(direction, transaction),
-                    model: manageTransactionViewModel
+                    model: ManageTransactionViewModel(
+                        categoriesService: dependencies.categoryService,
+                        transactionsService: dependencies.transactionService
+                    )
                 )
             }
         }
     }
-}
-
-#Preview {
-    TransactionsListView(direction: .income, model: TransactionsListModel(transactionsService: TransactionsService()))
+    
+    var body: some View {
+        StatableContentView(source: model) { data in
+            contentView(
+                transactions: data.transactions,
+                totalAmount: data.total
+            )
+        } retryAction: {
+            Task {
+                await model.fetchTransactions(direction: direction)
+            }
+        }
+        .task {
+            await model.fetchTransactions(direction: direction)
+        }
+    }
 }

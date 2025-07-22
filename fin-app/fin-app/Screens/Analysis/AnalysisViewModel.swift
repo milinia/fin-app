@@ -7,33 +7,50 @@
 
 import Foundation
 
-final class AnalysisViewModel: ObservableObject {
+final class AnalysisViewModel: LoadableObject {
+    typealias DataType = [GroupedTransactions]
     
-    @Published var groupedTransactions: [GroupedTransactions] = []
+    @Published var state: LoadingState<[GroupedTransactions]>
     @Published var totalAmount: Decimal = 0
     
     private var transactionService: TransactionsServiceProtocol
     
     init(transactionService: TransactionsServiceProtocol) {
         self.transactionService = transactionService
+        state = .loading
+    }
+    
+
+    func fetchTransactions(direction: Direction, startOfThePeriod: Date, endOfThePeriod: Date) async {
+//        if case .loading = state { return }
+        await setLoading()
+        do {
+            let transactions = try await transactionService.fetchTransactions(
+                from: startOfThePeriod,
+                to: endOfThePeriod,
+                by: direction
+            )
+            await setTotal(transactions: transactions)
+            await groupTransactions(transactions: transactions)
+        } catch {
+            state = .failed(error)
+        }
     }
     
     @MainActor
-    func fetchTransactions(direction: Direction, startOfThePeriod: Date, endOfThePeriod: Date) async {
-        do {
-            let transactions = try await transactionService.fetchTransactions(from: startOfThePeriod, to: endOfThePeriod)
-            let neededTransactions = transactions.filter { $0.category.isIncome == direction }
-            totalAmount = neededTransactions.reduce(0) { $0 + $1.amount }
-            groupTransactions(transactions: neededTransactions)
-        } catch {
-            
-        }
+    private func setLoading() {
+        self.state = .loading
+    }
+    
+    @MainActor
+    private func setTotal(transactions: [Transaction]) {
+        self.totalAmount = transactions.reduce(0) { $0 + $1.amount }
     }
 
-    
     @MainActor
     private func groupTransactions(transactions: [Transaction]) {
         var dict: [Category: Decimal] = [:]
+        
         
         for transaction in transactions {
             dict[transaction.category, default: 0] += transaction.amount
@@ -47,7 +64,7 @@ final class AnalysisViewModel: ObservableObject {
                 )
             }
             
-        groupedTransactions = groups
+        state = .completed(groups)
     }
     
     private func calculatePercentage(amount: Decimal) -> Int {

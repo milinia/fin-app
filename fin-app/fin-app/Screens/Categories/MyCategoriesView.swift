@@ -12,11 +12,11 @@ struct MyCategoriesView: View {
     @ObservedObject var model: MyCategoriesViewModel
     @State var searchText: String = ""
     
-    var body: some View {
+    private func contentView(categories: [Category]) -> some View {
         NavigationView {
             List {
                 Section(Strings.MyCategoriesView.category) {
-                    ForEach(model.categoriesToView) { category in
+                    ForEach(categories) { category in
                         HStack {
                             CircleEmojiIcon(emoji: String(category.emoji))
                             Text(category.name)
@@ -35,13 +35,19 @@ struct MyCategoriesView: View {
             }
             .searchable(text: $searchText)
             .navigationTitle(Strings.MyCategoriesView.title)
-            .task {
-                await model.fetchCategories()
-            }
         }
     }
-}
-
-#Preview {
-    MyCategoriesView(model: MyCategoriesViewModel(categoriesService: CategoriesService(), fuzzySearchHelper: FuzzySearchHelper()))
+    
+    var body: some View {
+        StatableContentView(source: model, content: { categories in
+            contentView(categories: categories)
+        }, retryAction: {
+            Task {
+                await model.fetchCategories()
+            }
+        })
+        .task {
+            await model.fetchCategories()
+        }
+    }
 }

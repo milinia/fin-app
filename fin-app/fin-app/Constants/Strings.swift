@@ -22,6 +22,7 @@ enum Strings {
         static let outcomeTitle = "Расходы сегодня"
         static let total = "Всего"
         static let operations = "Операции"
+        static let noOperations = "Пока нет операций"
     }
     
     enum HistoryView {
@@ -65,6 +66,7 @@ enum Strings {
         static let create = "Создать"
         static let cancel = "Отмена"
         static let categories = "Статья"
+        static let chooseCategory = "Выберите категорию"
         static let sum = "Сумма"
         static let date = "Дата"
         static let time = "Время"
@@ -72,6 +74,7 @@ enum Strings {
         static let deleteOutcome = "Удалить расход"
         static let error = "Ошибка"
         static let ok = "Oк"
+        static let comment = "Комментарий"
         static let emptyFields = "Заполните, пожалуйста, все поля"
     }
 }

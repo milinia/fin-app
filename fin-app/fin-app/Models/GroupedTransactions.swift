@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GroupedTransactions {
+struct GroupedTransactions: Equatable {
     let amount: Decimal
     let category: Category
     let percentage: Int
