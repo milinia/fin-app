@@ -48,7 +48,7 @@ actor TransactionSwiftDataCache: ModelActor, TransactionCacheProtocol {
             }
         }()
         
-        var transactionDescriptor = FetchDescriptor<TransactionCacheModel>(
+        let transactionDescriptor = FetchDescriptor<TransactionCacheModel>(
             predicate: predicate,
             sortBy: [.init(\.transactionDate)]
         )
@@ -172,7 +172,6 @@ actor TransactionSwiftDataCache: ModelActor, TransactionCacheProtocol {
             print("Failed to fetch/create category: \(error)")
         }
         
-        existingTransaction.account = transaction.account
         existingTransaction.amount = String(describing: transaction.amount)
         existingTransaction.transactionDate = transaction.transactionDate
         existingTransaction.currency = transaction.account.currency

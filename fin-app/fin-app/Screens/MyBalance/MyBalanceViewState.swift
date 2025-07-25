@@ -56,4 +56,13 @@ enum MyBalanceViewState {
             return .lightGray
         }
     }
+    
+    var isStatisticsShown: Bool {
+        switch self {
+        case .view:
+            return true
+        case .edit:
+            return false
+        }
+    }
 }

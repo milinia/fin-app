@@ -154,12 +154,19 @@ class InfoView: UIView {
     }
     
     @objc private func dateChanged(_ sender: UIDatePicker) {
-        if sender == startDatePicker && startDatePicker.date > endDatePicker.date {
-            endDatePicker.setDate(startDatePicker.date, animated: true)
-        } else if sender == endDatePicker && endDatePicker.date < startDatePicker.date {
-            startDatePicker.setDate(endDatePicker.date, animated: true)
+        if sender == startDatePicker {
+            if startDatePicker.date > endDatePicker.date {
+                endDatePicker.setDate(startDatePicker.date, animated: true)
+            }
+        } else if sender == endDatePicker {
+            if endDatePicker.date < startDatePicker.date {
+                startDatePicker.setDate(endDatePicker.date, animated: true)
+            }
         }
-        delegate?.dateDidChange(startDate: startDatePicker.date, endDate: endDatePicker.date)
+        delegate?.dateDidChange(
+            startDate: startDatePicker.date,
+            endDate: endDatePicker.date
+        )
     }
 }
 

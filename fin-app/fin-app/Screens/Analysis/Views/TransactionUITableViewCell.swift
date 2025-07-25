@@ -86,7 +86,7 @@ class TransactionUITableViewCell: UITableViewCell {
         emojiLabel.text = String(transaction.category.emoji)
         transactionTitleLabel.text = transaction.category.name
         transactionAmountLabel.text = String(describing: transaction.amount).amountFormatted()
-        transactionPercentLabel.text = String(transaction.percentage) + "%"
+        transactionPercentLabel.text = String(describing: transaction.percentage) + "%"
     }
     
     private func setupUI() {

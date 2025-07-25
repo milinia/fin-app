@@ -14,11 +14,14 @@ final class MyBalanceModel: LoadableObject {
     @Published var selectedCurrency: CurrencySign = .rub
     @Published var balance: Decimal = 0
     @Published var balanceString: String = ""
+    @Published var statistics: [TransactionStatistics] = []
     
     private let bankAccountService: BankAccountsServiceProtocol
+    private let transactionsService: TransactionsServiceProtocol
     
-    init(bankAccountService: BankAccountsServiceProtocol) {
+    init(bankAccountService: BankAccountsServiceProtocol, transactionsService: TransactionsServiceProtocol) {
         self.bankAccountService = bankAccountService
+        self.transactionsService = transactionsService
         state = .loading
     }
     
@@ -34,9 +37,51 @@ final class MyBalanceModel: LoadableObject {
         }
     }
     
+    func getTransactionsStatistics(isDayStatistics: Bool) async {
+        do {
+            let transactions = try await transactionsService.fetchTransactions(
+                from: isDayStatistics ? Date.dayMonthAgo : Date.twoYearsAgo,
+                to: Date.startOfTomorrow,
+                by: nil
+            )
+            
+            let calendar = Calendar.current
+            
+            var dict: [Date: Double] = transactions.reduce(into: [:]) { result, transaction in
+                let date = isDayStatistics ? calendar.startOfDay(for: transaction.transactionDate) : calendar.startOfMonth(for: transaction.transactionDate)
+                if transaction.category.isIncome == .income {
+                    result[date, default: 0] += (transaction.amount as NSDecimalNumber).doubleValue
+                } else {
+                    result[date, default: 0] -= (transaction.amount as NSDecimalNumber).doubleValue
+                }
+            }
+            
+            var startDate = isDayStatistics ? Date.dayMonthAgo : Date.twoYearsAgo
+            let endDate = Date.startOfTomorrow
+            
+            while startDate < endDate {
+                let date = isDayStatistics ? calendar.startOfDay(for: startDate) : calendar.startOfMonth(for: startDate)
+                if dict[date] == nil {
+                    dict[date] = 0
+                }
+                startDate = calendar.date(byAdding: isDayStatistics ? .day : .month, value: 1, to: startDate) ?? Date()
+            }
+            
+            let statisticsArray = dict.map { TransactionStatistics(date: $0.key, balance: $0.value) }
+            await setStaistics(statisticsArray)
+        } catch {
+            await setError(error)
+        }
+    }
+    
     @MainActor
     private func setError(_ error: Error) {
         state = .failed(error)
+    }
+    
+    @MainActor
+    private func setStaistics(_ statistics: [TransactionStatistics]) {
+        self.statistics = statistics
     }
     
     @MainActor

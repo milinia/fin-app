@@ -39,7 +39,8 @@ struct TabBar: View {
                 Tab(Strings.TabBar.balance, image: AppIcons.TabBarIcons.balance.rawValue) {
                     MyBalanceView(
                         model: MyBalanceModel(
-                            bankAccountService: dependencies.bankAccountService
+                            bankAccountService: dependencies.bankAccountService,
+                            transactionsService: dependencies.transactionService
                         )
                     )
                 }

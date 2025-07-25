@@ -17,4 +17,9 @@ extension Date {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now
         return Calendar.current.startOfDay(for: tomorrow)
     }
+    
+    static var twoYearsAgo: Date {
+        let date = Calendar.current.date(byAdding: .month, value: -24, to: .now) ?? .now
+        return Calendar.current.startOfDay(for: date)
+    }
 }
