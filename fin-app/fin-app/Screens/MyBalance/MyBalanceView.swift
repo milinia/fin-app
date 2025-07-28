@@ -15,6 +15,7 @@ struct MyBalanceView: View {
     @State private var state: MyBalanceViewState = .view
     @FocusState private var isBalanceEntering: Bool
     @State private var isBalanceHidden: Bool = false
+    @State private var isDayStatistics: Bool = true
     
     private var balanceView: some View {
        HStack {
@@ -82,12 +83,35 @@ struct MyBalanceView: View {
                         .transition(.opacity)
                 }
                 ScrollView {
-                    VStack {
+                    VStack(spacing: 15) {
                         balanceView
                             .padding(.horizontal, 16)
                         currencyView
                             .padding(.horizontal, 16)
+                        if state.isStatisticsShown {
+                            HStack {
+                                Text("Статистика по")
+                                    .font(.system(size: 14))
+                                Picker("", selection: $isDayStatistics) {
+                                    Text("дням").tag(true)
+                                    Text("месяцам").tag(false)
+                                }
+                                .pickerStyle(SegmentedPickerStyle())
+                            }
+                            .padding(.horizontal, 16)
+                            
+                            BalanceChart(isDayStatistics: $isDayStatistics, statistics: model.statistics)
+                                .frame(width: 380, height: 235)
+                                .padding(.top, 50)
+                                .padding(.horizontal, 16)
+                                .animation(.easeInOut, value: model.statistics)
+                        }
                         Spacer()
+                    }
+                    .onChange(of: isDayStatistics) {
+                        Task {
+                            await model.getTransactionsStatistics(isDayStatistics: isDayStatistics)
+                        }
                     }
                 }
                 .scrollDismissesKeyboard(.interactively)
@@ -143,10 +167,12 @@ struct MyBalanceView: View {
         } retryAction: {
             Task {
                 await model.fetchBankAccount()
+                await model.getTransactionsStatistics(isDayStatistics: isDayStatistics)
             }
         }
         .task {
             await model.fetchBankAccount()
+            await model.getTransactionsStatistics(isDayStatistics: isDayStatistics)
         }
     }
 }

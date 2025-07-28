@@ -23,7 +23,7 @@ final class NetworkClient: NetworkClientProtocol {
     private let encoder: JSONEncoder
     
     init() {
-        self.token = ""
+        self.token = "POF3GvINBhxG3SiS5WK7Ouzg"
         self.urlSession = URLSession.shared
         self.decoder = JSONDecoder()
         self.encoder = JSONEncoder()

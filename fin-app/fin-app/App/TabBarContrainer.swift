@@ -8,17 +8,30 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import Lottie
 
 struct TabBarContainer: View {
     let modelContainer: ModelContainer
     @State private var dependencies: AppDependencies?
+    @State private var animationDidFinish: Bool = false
 
     var body: some View {
-        Group {
-            if let deps = dependencies {
-                TabBar(dependencies: deps)
-            } else {
-                ProgressView()
+        VStack {
+            if !animationDidFinish {
+                LottieView(animation: .named("pig.json"))
+                    .animationDidFinish { completed in
+                        animationDidFinish = true
+                    }
+                    .playing()
+            }
+            if animationDidFinish {
+                Group {
+                    if let deps = dependencies {
+                        TabBar(dependencies: deps)
+                    } else {
+                        ProgressView()
+                    }
+                }
             }
         }
         .task {

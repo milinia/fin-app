@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E52EDA422E2FF82700963964 /* PieChart in Frameworks */ = {isa = PBXBuildFile; productRef = E52EDA412E2FF82700963964 /* PieChart */; };
+		E5763E9E2E33B2480001B59D /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = E5763E9D2E33B2480001B59D /* Lottie */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E546589D2DF431FE0001F09E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -23,7 +28,21 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E5763EA62E33CF5A0001B59D /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		E52EDA3D2E2FD49000963964 /* PieChart */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = PieChart; sourceTree = "<group>"; };
 		E546588A2DF431FD0001F09E /* fin-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "fin-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E546589C2DF431FE0001F09E /* fin-appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "fin-appTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E54658A62DF431FE0001F09E /* fin-appUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "fin-appUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +71,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E52EDA422E2FF82700963964 /* PieChart in Frameworks */,
+				E5763E9E2E33B2480001B59D /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +93,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E52EDA3C2E2FD37A00963964 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				E52EDA3D2E2FD49000963964 /* PieChart */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		E52EDA3E2E2FF7FE00963964 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		E54658812DF431FD0001F09E = {
 			isa = PBXGroup;
 			children = (
 				E546588C2DF431FD0001F09E /* fin-app */,
 				E546589F2DF431FE0001F09E /* fin-appTests */,
 				E54658A92DF431FE0001F09E /* fin-appUITests */,
+				E52EDA3C2E2FD37A00963964 /* Utilities */,
+				E52EDA3E2E2FF7FE00963964 /* Frameworks */,
 				E546588B2DF431FD0001F09E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -102,6 +140,7 @@
 				E54658862DF431FD0001F09E /* Sources */,
 				E54658872DF431FD0001F09E /* Frameworks */,
 				E54658882DF431FD0001F09E /* Resources */,
+				E5763EA62E33CF5A0001B59D /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -112,6 +151,8 @@
 			);
 			name = "fin-app";
 			packageProductDependencies = (
+				E52EDA412E2FF82700963964 /* PieChart */,
+				E5763E9D2E33B2480001B59D /* Lottie */,
 			);
 			productName = "fin-app";
 			productReference = E546588A2DF431FD0001F09E /* fin-app.app */;
@@ -196,6 +237,7 @@
 			mainGroup = E54658812DF431FD0001F09E;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				E5763E9C2E33B2480001B59D /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E546588B2DF431FD0001F09E /* Products */;
@@ -560,6 +602,29 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E5763E9C2E33B2480001B59D /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E52EDA412E2FF82700963964 /* PieChart */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PieChart;
+		};
+		E5763E9D2E33B2480001B59D /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E5763E9C2E33B2480001B59D /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E54658822DF431FD0001F09E /* Project object */;
 }

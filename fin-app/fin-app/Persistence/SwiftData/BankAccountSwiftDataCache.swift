@@ -29,30 +29,24 @@ actor BankAccountSwiftDataCache: ModelActor, BankAccountCacheProtocol {
     }
     
     func getAccount() async throws -> BankAccount? {
-        var categoryDescriptor = FetchDescriptor<BankAccount>(predicate: nil)
-        categoryDescriptor.fetchLimit = 1
-        return try modelContext.fetch(categoryDescriptor).first
+        var accountDescriptor = FetchDescriptor<BankAccount>(predicate: nil)
+        accountDescriptor.fetchLimit = 1
+        return try modelContext.fetch(accountDescriptor).first
     }
     
     func editAccount(id: Int, newAmount: Decimal, newCurrency: String, newName: String) async throws {
-        var categoryDescriptor = FetchDescriptor<BankAccount>(
+        var accountDescriptor = FetchDescriptor<BankAccount>(
             predicate: #Predicate<BankAccount> { $0.id == id }
         )
-        categoryDescriptor.fetchLimit = 1
+        accountDescriptor.fetchLimit = 1
         
-        if let existingAccount = try modelContext.fetch(categoryDescriptor).first {
+        if let existingAccount = try modelContext.fetch(accountDescriptor).first {
             existingAccount.name = newName
             existingAccount.currency = newCurrency
             existingAccount.balance = newAmount
         } else {
             let account = BankAccount(id: id, name: newName, balance: newAmount, currency: newCurrency)
-            
             modelContext.insert(account)
-            if modelContext.hasChanges {
-                try modelContext.save()
-            }
-            
-            return
         }
         
         if modelContext.hasChanges {

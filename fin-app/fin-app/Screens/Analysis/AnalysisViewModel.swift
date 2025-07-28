@@ -22,7 +22,6 @@ final class AnalysisViewModel: LoadableObject {
     
 
     func fetchTransactions(direction: Direction, startOfThePeriod: Date, endOfThePeriod: Date) async {
-//        if case .loading = state { return }
         await setLoading()
         do {
             let transactions = try await transactionService.fetchTransactions(
@@ -67,11 +66,15 @@ final class AnalysisViewModel: LoadableObject {
         state = .completed(groups)
     }
     
-    private func calculatePercentage(amount: Decimal) -> Int {
+    private func calculatePercentage(amount: Decimal) -> Decimal {
         guard totalAmount != 0 else { return 0 }
         let value = amount / totalAmount
         let result = value * 100
-        let rounded = NSDecimalNumber(decimal: result).rounding(accordingToBehavior: nil)
-        return rounded.intValue
+        
+        var rounded = Decimal()
+        var input = result
+        NSDecimalRound(&rounded, &input, 1, .plain)
+            
+        return rounded
     }
 }

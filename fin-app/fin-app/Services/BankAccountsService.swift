@@ -36,7 +36,7 @@ final class BankAccountsService: BankAccountsServiceProtocol {
                             currency: cachedAccount.currency)
                     )
                 )
-            
+                await saveAccount(cachedAccount)
                 return cachedAccount
             } else {
                 let accounts: [BankAccount] = try await networkClient.request(
@@ -51,6 +51,8 @@ final class BankAccountsService: BankAccountsServiceProtocol {
                     newCurrency: account.currency,
                     newName: account.name
                 )
+                await saveAccount(account)
+                return account
             }
         } catch {
             if let cachedAccount = try await bankAccountCache.getAccount() {
@@ -59,6 +61,11 @@ final class BankAccountsService: BankAccountsServiceProtocol {
         }
         
         return nil
+    }
+    
+    @MainActor
+    private func saveAccount(_ account: BankAccount) {
+        self.account = account
     }
     
     func updateBankAccount(balance: Decimal, currency: String) async throws -> BankAccount? {

@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import PieChart
 
 class AnalysisViewController: UIViewController {
     
@@ -41,6 +42,11 @@ class AnalysisViewController: UIViewController {
         return view
     }()
     
+    private lazy var pieChartView: PieChartView = {
+        let view = PieChartView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     private lazy var transactionsTableView: UITableView = {
         let tableView = UITableView()
@@ -79,6 +85,7 @@ class AnalysisViewController: UIViewController {
         setupScrollView()
         setupNavigationTitle()
         setupInfoView()
+        setupPieChartView()
         setupTransactionLabel()
         setupTableView()
     }
@@ -87,6 +94,8 @@ class AnalysisViewController: UIViewController {
         self.transactions = transactions
         transactionsTableView.reloadData()
         infoView.sum = String(describing: totalAmount)
+        let entities = transactions.map( { Entity(value: $0.percentage, label: $0.category.name) })
+        pieChartView.reloadData(with: entities)
         
         DispatchQueue.main.async {
             self.tableViewHeightConstraint?.constant = CGFloat(self.transactions.count) * 85
@@ -146,11 +155,22 @@ class AnalysisViewController: UIViewController {
         ])
     }
     
+    private func setupPieChartView() {
+        view.addSubview(pieChartView)
+        
+        NSLayoutConstraint.activate([
+            pieChartView.topAnchor.constraint(equalTo: infoView.bottomAnchor, constant: 20),
+            pieChartView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            pieChartView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+            pieChartView.heightAnchor.constraint(equalToConstant: 185)
+        ])
+    }
+    
     private func setupTransactionLabel() {
         view.addSubview(transactionLabel)
         
         NSLayoutConstraint.activate([
-            transactionLabel.topAnchor.constraint(equalTo: infoView.bottomAnchor, constant: 20),
+            transactionLabel.topAnchor.constraint(equalTo: pieChartView.bottomAnchor, constant: 20),
             transactionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16)
         ])
     }

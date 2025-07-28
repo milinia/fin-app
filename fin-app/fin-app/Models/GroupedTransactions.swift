@@ -10,5 +10,5 @@ import Foundation
 struct GroupedTransactions: Equatable {
     let amount: Decimal
     let category: Category
-    let percentage: Int
+    let percentage: Decimal
 }
